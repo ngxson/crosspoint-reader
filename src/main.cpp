@@ -197,6 +197,11 @@ void waitForPowerRelease() {
   }
 }
 
+bool isUsbConnected() {
+  // U0RXD/GPIO20 reads HIGH when USB is connected
+  return digitalRead(UART0_RXD) == HIGH;
+}
+
 // Enter deep sleep mode
 void enterDeepSleep() {
   exitActivity();
@@ -210,6 +215,31 @@ void enterDeepSleep() {
   waitForPowerRelease();
   // Enter Deep Sleep
   esp_deep_sleep_start();
+}
+
+// Enter light sleep mode
+void enterLightSleep() {
+  unsigned long sleepDurationMs = 60000; // Default to 1 minute
+  Serial.printf("[%lu] [   ] Entering light sleep for %lu ms.\n", millis(), sleepDurationMs);
+
+  // TODO: setup button wakeup
+
+  // Setup wakeup timer
+  esp_err_t result = esp_sleep_enable_timer_wakeup(sleepDurationMs * 1000);
+  if (result != ESP_OK) {
+    Serial.printf("[%lu] [   ] Failed to enable light sleep timer wakeup: %d\n", millis(), result);
+    return;
+  }
+
+  // Enter Light Sleep
+  esp_light_sleep_start();
+  Serial.printf("[%lu] [   ] Woke up from light sleep\n", millis());
+}
+
+// Check if we can enter light sleep mode
+bool canEnterLightSleep() {
+  return !isUsbConnected() && !WiFi.isConnected() &&
+         !(currentActivity && (currentActivity->preventAutoSleep() || currentActivity->skipLoopDelay()));
 }
 
 void onGoHome();
@@ -274,11 +304,6 @@ void setupDisplayAndFonts() {
   renderer.insertFont(UI_12_FONT_ID, ui12FontFamily);
   renderer.insertFont(SMALL_FONT_ID, smallFontFamily);
   Serial.printf("[%lu] [   ] Fonts setup\n", millis());
-}
-
-bool isUsbConnected() {
-  // U0RXD/GPIO20 reads HIGH when USB is connected
-  return digitalRead(UART0_RXD) == HIGH;
 }
 
 bool isWakeupAfterFlashing() {
@@ -357,8 +382,7 @@ void loop() {
   static unsigned long maxLoopDuration = 0;
   const unsigned long loopStartTime = millis();
   static unsigned long lastMemPrint = 0;
-
-  inputManager.update();
+  static unsigned long lastActivityTime = millis();
 
   if (Serial && millis() - lastMemPrint >= 10000) {
     Serial.printf("[%lu] [MEM] Free: %d bytes, Total: %d bytes, Min Free: %d bytes\n", millis(), ESP.getFreeHeap(),
@@ -366,8 +390,14 @@ void loop() {
     lastMemPrint = millis();
   }
 
+  // May enter light sleep to save power if possible (5s after last activity)
+  if (millis() - lastActivityTime >= 5000 && canEnterLightSleep()) {
+    enterLightSleep(); // Will return after a while
+  }
+
+  inputManager.update();
+
   // Check for any user activity (button press or release) or active background work
-  static unsigned long lastActivityTime = millis();
   if (inputManager.wasAnyPressed() || inputManager.wasAnyReleased() ||
       (currentActivity && currentActivity->preventAutoSleep())) {
     lastActivityTime = millis();  // Reset inactivity timer
