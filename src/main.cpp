@@ -298,7 +298,12 @@ bool isWakeupAfterFlashing() {
 
 bool isWakeupByPowerButton() {
   const auto wakeupCause = esp_sleep_get_wakeup_cause();
-  return wakeupCause == ESP_SLEEP_WAKEUP_GPIO;
+  const auto resetReason = esp_reset_reason();
+  if (isUsbConnected()) {
+    return wakeupCause == ESP_SLEEP_WAKEUP_GPIO;
+  } else {
+    return (wakeupCause == ESP_SLEEP_WAKEUP_UNDEFINED) && (resetReason == ESP_RST_POWERON);
+  }
 }
 
 void setup() {
