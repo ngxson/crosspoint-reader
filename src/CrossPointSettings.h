@@ -54,6 +54,8 @@ class CrossPointSettings {
 
   // Short power button press actions
   enum SHORT_PWRBTN { IGNORE = 0, SLEEP = 1, PAGE_TURN = 2 };
+  static constexpr uint16_t SHORT_PRESS_DURATION_MS = 10;
+  static constexpr uint16_t LONG_PRESS_DURATION_MS = 400;
 
   // Hide battery percentage
   enum HIDE_BATTERY_PERCENTAGE { HIDE_NEVER = 0, HIDE_READER = 1, HIDE_ALWAYS = 2 };
@@ -101,7 +103,8 @@ class CrossPointSettings {
   static CrossPointSettings& getInstance() { return instance; }
 
   uint16_t getPowerButtonDuration() const {
-    return (shortPwrBtn == CrossPointSettings::SHORT_PWRBTN::SLEEP) ? 10 : 400;
+    return (shortPwrBtn == CrossPointSettings::SHORT_PWRBTN::SLEEP)
+            ? SHORT_PRESS_DURATION_MS : LONG_PRESS_DURATION_MS;
   }
   int getReaderFontId() const;
 

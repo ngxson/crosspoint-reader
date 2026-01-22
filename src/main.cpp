@@ -154,7 +154,7 @@ void enterNewActivity(Activity* activity) {
 // Verify power button press duration on wake-up from deep sleep
 // Pre-condition: isWakeupByPowerButton() == true
 void verifyPowerButtonDuration() {
-  if (SETTINGS.getPowerButtonDuration() <= 10) {
+  if (SETTINGS.getPowerButtonDuration() <= CrossPointSettings::SHORT_PRESS_DURATION_MS) {
     // Fast path for short press
     // Needed because inputManager.isPressed() may take up to ~500ms to return the correct state
     return;
