@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <EInkDisplay.h>
+#include <HalDisplay.h>
 #include <Epub.h>
 #include <GfxRenderer.h>
 #include <InputManager.h>
@@ -39,7 +39,7 @@
 
 #define SD_SPI_MISO 7
 
-EInkDisplay einkDisplay(EPD_SCLK, EPD_MOSI, EPD_CS, EPD_DC, EPD_RST, EPD_BUSY);
+HalDisplay einkDisplay(EPD_SCLK, EPD_MOSI, EPD_CS, EPD_DC, EPD_RST, EPD_BUSY);
 InputManager inputManager;
 MappedInputManager mappedInputManager(inputManager);
 GfxRenderer renderer(einkDisplay);
