@@ -290,6 +290,7 @@ bool isWakeupAfterFlashing() {
 
 void setup() {
   t1 = millis();
+  Serial.printf("[%lu] [   ] Main started\n", millis());
 
   // Only start serial if USB connected
   pinMode(UART0_RXD, INPUT);
@@ -320,12 +321,13 @@ void setup() {
   }
 
   SETTINGS.loadFromFile();
-  KOREADER_STORE.loadFromFile();
 
   if (!isWakeupAfterFlashing()) {
     // For normal wakeups (not immediately after flashing), verify long press
     verifyWakeupLongPress();
   }
+
+  KOREADER_STORE.loadFromFile();
 
   // First serial output only here to avoid timing inconsistencies for power button press duration verification
   Serial.printf("[%lu] [   ] Starting CrossPoint version " CROSSPOINT_VERSION "\n", millis());

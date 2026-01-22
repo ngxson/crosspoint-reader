@@ -2,13 +2,15 @@
 #include <cstdint>
 #include <iosfwd>
 
+#include <Arduino.h>
+
 class CrossPointSettings {
  private:
   // Private constructor for singleton
   CrossPointSettings() = default;
 
-  // Static instance
-  static CrossPointSettings instance;
+  // Static instance (persistent across sleep/wake)
+  RTC_DATA_ATTR static CrossPointSettings instance;
 
  public:
   // Delete copy constructor and assignment
@@ -57,6 +59,9 @@ class CrossPointSettings {
 
   // Hide battery percentage
   enum HIDE_BATTERY_PERCENTAGE { HIDE_NEVER = 0, HIDE_READER = 1, HIDE_ALWAYS = 2 };
+
+  // It can be non-initialized in case of cold boot
+  bool isInitialized = false;
 
   // Sleep screen settings
   uint8_t sleepScreen = DARK;

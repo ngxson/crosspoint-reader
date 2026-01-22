@@ -56,6 +56,13 @@ bool CrossPointSettings::saveToFile() const {
 }
 
 bool CrossPointSettings::loadFromFile() {
+  if (isInitialized) {
+    Serial.printf("[%lu] [CPS] Using settings values before sleeping\n", millis());
+    return true;
+  }
+
+  isInitialized = true;
+
   FsFile inputFile;
   if (!SdMan.openFileForRead("CPS", SETTINGS_FILE, inputFile)) {
     return false;
