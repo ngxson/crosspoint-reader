@@ -219,27 +219,39 @@ void enterDeepSleep() {
 
 // Enter light sleep mode
 void enterLightSleep() {
-  unsigned long sleepDurationMs = 60000; // Default to 1 minute
-  Serial.printf("[%lu] [   ] Entering light sleep for %lu ms.\n", millis(), sleepDurationMs);
+  unsigned long sleepDurationMs = 50;
+  Serial.printf("[%lu] [   ] Entering light sleep for max %lu ms.\n", millis(), sleepDurationMs);
 
-  // TODO: setup button wakeup
+  esp_err_t result;
+
+  // Wake on GPIO (power button - other buttons are analog and cannot be used here)
+  gpio_wakeup_enable((gpio_num_t)InputManager::POWER_BUTTON_PIN, GPIO_INTR_LOW_LEVEL);
+  result = esp_sleep_enable_gpio_wakeup();
+  if (result != ESP_OK) {
+    Serial.printf("[%lu] [   ] Failed to enable light sleep GPIO wakeup: %d\n", millis(), result);
+    return;
+  }
 
   // Setup wakeup timer
-  esp_err_t result = esp_sleep_enable_timer_wakeup(sleepDurationMs * 1000);
+  result = esp_sleep_enable_timer_wakeup(sleepDurationMs * 1000);
   if (result != ESP_OK) {
     Serial.printf("[%lu] [   ] Failed to enable light sleep timer wakeup: %d\n", millis(), result);
     return;
   }
 
   // Enter Light Sleep
+  einkDisplay.deepSleep();
   esp_light_sleep_start();
+
+  einkDisplay.begin();
   Serial.printf("[%lu] [   ] Woke up from light sleep\n", millis());
 }
 
 // Check if we can enter light sleep mode
 bool canEnterLightSleep() {
-  return !isUsbConnected() && !WiFi.isConnected() &&
-         !(currentActivity && (currentActivity->preventAutoSleep() || currentActivity->skipLoopDelay()));
+  return true;
+  //return !isUsbConnected() && !WiFi.isConnected() &&
+  //       !(currentActivity && (currentActivity->preventAutoSleep() || currentActivity->skipLoopDelay()));
 }
 
 void onGoHome();
