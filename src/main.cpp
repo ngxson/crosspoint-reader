@@ -190,6 +190,9 @@ void verifyWakeupLongPress() {
 }
 
 void waitForPowerRelease() {
+  if (CROSSPOINT_EMULATED) {
+    return;
+  }
   inputManager.update();
   while (inputManager.isPressed(InputManager::BTN_POWER)) {
     delay(50);
@@ -282,6 +285,9 @@ bool isUsbConnected() {
 }
 
 bool isWakeupAfterFlashing() {
+  if (CROSSPOINT_EMULATED) {
+    return true;
+  }
   const auto wakeupCause = esp_sleep_get_wakeup_cause();
   const auto resetReason = esp_reset_reason();
 

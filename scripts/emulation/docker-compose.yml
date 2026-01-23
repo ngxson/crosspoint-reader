@@ -4,6 +4,7 @@ services:
     container_name: crosspoint-emulator
     volumes:
       - ../..:/app:ro
+      - ../../.sdcard:/sdcard:rw
     tmpfs:
       - /tmp
     ports:
@@ -31,4 +32,4 @@ services:
         python3 -m pip install websockets --break-system-packages
 
         cp /app/scripts/emulation/web_ui.html .
-        python3 /app/scripts/emulation/web_server.py
+        python3 /app/scripts/emulation/server.py

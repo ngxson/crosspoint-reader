@@ -1,7 +1,6 @@
 #include <HalDisplay.h>
+#include <EmulationUtils.h>
 #include <string>
-
-std::string base64_encode(char* buf, unsigned int bufLen);
 
 HalDisplay::HalDisplay(int8_t sclk, int8_t mosi, int8_t cs, int8_t dc, int8_t rst, int8_t busy) : einkDisplay(sclk, mosi, cs, dc, rst, busy) {
   if (is_emulated) {
@@ -71,10 +70,9 @@ void HalDisplay::displayBuffer(RefreshMode mode) {
     einkDisplay.displayBuffer(mode);
   } else {
     Serial.printf("[%lu] [   ] Emulated display buffer with mode %d\n", millis(), static_cast<int>(mode));
-    std::string b64 = base64_encode(reinterpret_cast<char*>(emuFramebuffer0), BUFFER_SIZE);
-    Serial.printf("$$DATA:DISPLAY:{\"mode\":%d,\"buffer\":\"", static_cast<int>(mode));
-    Serial.print(b64.c_str());
-    Serial.print("\"}$$\n");
+    std::string b64 = EmulationUtils::base64_encode(reinterpret_cast<char*>(emuFramebuffer0), BUFFER_SIZE);
+    EmulationUtils::sendCmd(EmulationUtils::CMD_DISPLAY, b64.c_str());
+    // no response expected
   }
 }
 
@@ -154,59 +152,4 @@ void HalDisplay::displayGrayBuffer() {
     Serial.printf("[%lu] [   ] Emulated display gray buffer\n", millis());
     // TODO: not sure what this does
   }
-}
-
-//
-// Base64 utilities
-//
-
-static const std::string base64_chars =
-             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-             "abcdefghijklmnopqrstuvwxyz"
-             "0123456789+/";
-
-static inline bool is_base64(char c) {
-  return (isalnum(c) || (c == '+') || (c == '/'));
-}
-
-std::string base64_encode(char* buf, unsigned int bufLen) {
-  std::string ret;
-  ret.reserve(bufLen * 4 / 3 + 4); // reserve enough space
-  int i = 0;
-  int j = 0;
-  char char_array_3[3];
-  char char_array_4[4];
-
-  while (bufLen--) {
-    char_array_3[i++] = *(buf++);
-    if (i == 3) {
-      char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-      char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-      char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
-      char_array_4[3] = char_array_3[2] & 0x3f;
-
-      for(i = 0; (i < 4) ; i++)
-        ret += base64_chars[char_array_4[i]];
-      i = 0;
-    }
-  }
-
-  if (i) {
-    for(j = i; j < 3; j++) {
-      char_array_3[j] = '\0';
-    }
-
-    char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-    char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-    char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
-    char_array_4[3] = char_array_3[2] & 0x3f;
-
-    for (j = 0; (j < i + 1); j++)
-      ret += base64_chars[char_array_4[j]];
-
-    while((i++ < 3))
-      ret += '=';
-  }
-
-  return ret;
 }

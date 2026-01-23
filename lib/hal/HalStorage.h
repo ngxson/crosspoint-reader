@@ -1,7 +1,75 @@
 #pragma once
 
-#include <SDCardManager.h>
+#include <Arduino.h>
 #include <vector>
+
+#if CROSSPOINT_EMULATED == 0
+#include <SDCardManager.h>
+#else
+typedef int oflag_t;
+#define	O_RDONLY	0		/* +1 == FREAD */
+#define	O_WRONLY	1		/* +1 == FWRITE */
+#define	O_RDWR		2		/* +1 == FREAD|FWRITE */
+
+class FsFile : public Print {
+  String path;
+  String name;
+  oflag_t oflag; // unused for now
+  bool open = false;
+  // directory state
+  bool isDir = false;
+  std::vector<String> dirEntries;
+  size_t dirIndex = 0;
+  // file state
+  size_t filePos = 0;
+  size_t fileSizeBytes = 0;
+ public:
+  FsFile() = default;
+  FsFile(const char* path, oflag_t oflag);
+  ~FsFile() = default;
+
+  void flush() { /* no-op */ }
+  size_t getName(char* name, size_t len) {
+    String n = path;
+    if (n.length() >= len) {
+      n = n.substring(0, len - 1);
+    }
+    n.toCharArray(name, len);
+    return n.length();
+  }
+  size_t size() { return fileSizeBytes; }
+  size_t fileSize() { return size(); }
+  size_t seek(size_t pos) { 
+    filePos = pos; 
+    return filePos; 
+  }
+  size_t seekCur(int64_t offset) { return seek(filePos + offset); }
+  size_t seekSet(size_t offset) { return seek(offset); }
+  int available() const { return (fileSizeBytes > filePos) ? (fileSizeBytes - filePos) : 0; }
+  size_t position() const { return filePos; }
+  int read(void* buf, size_t count);
+  int read(); // read a single byte
+  size_t write(const uint8_t* buffer, size_t size);
+  size_t write(uint8_t b) override;
+  bool isDirectory() const { return isDir; }
+  int rewindDirectory() {
+    if (!isDir) return -1;
+    dirIndex = 0;
+    return 0;
+  }
+  bool close() { open = false; return true; }
+  FsFile openNextFile() {
+    if (!isDir || dirIndex >= dirEntries.size()) {
+      return FsFile();
+    }
+    FsFile f(dirEntries[dirIndex].c_str(), O_RDONLY);
+    dirIndex++;
+    return f;
+  }
+  bool isOpen() const { return open; }
+  operator bool() const { return isOpen(); }
+};
+#endif
 
 class HalStorage {
  public:
@@ -42,8 +110,9 @@ class HalStorage {
  private:
   static HalStorage instance;
 
-  bool initialized = false;
-  SdFat sd;
+  bool is_emulated = CROSSPOINT_EMULATED;
 };
 
-#define HAL_STORAGE HalStorage::getInstance()
+#if CROSSPOINT_EMULATED == 1
+#define SdMan HalStorage::getInstance()
+#endif
