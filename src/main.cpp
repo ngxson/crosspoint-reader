@@ -184,7 +184,7 @@ void verifyWakeupLongPress() {
   if (abort) {
     // Button released too early. Returning to sleep.
     // IMPORTANT: Re-arm the wakeup trigger before sleeping again
-    inputManager.setupGpioWakeup();
+    startDeepSleep(inputManager);
   }
 }
 
@@ -207,7 +207,7 @@ void enterDeepSleep() {
   einkDisplay.deepSleep();
   Serial.printf("[%lu] [   ] Power button press calibration value: %lu ms\n", millis(), t2 - t1);
   Serial.printf("[%lu] [   ] Entering deep sleep.\n", millis());
-  inputManager.setupGpioWakeup();
+  startDeepSleep(inputManager);
 }
 
 void onGoHome();

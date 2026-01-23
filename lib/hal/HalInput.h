@@ -23,8 +23,6 @@ class HalInput {
   bool wasAnyReleased() const;
   unsigned long getHeldTime() const;
 
-  void setupGpioWakeup();
-
   // Button indices
   static constexpr uint8_t BTN_BACK = 0;
   static constexpr uint8_t BTN_CONFIRM = 1;
@@ -38,3 +36,5 @@ class HalInput {
 #if CROSSPOINT_EMULATED == 1
 using InputManager = HalInput;
 #endif
+
+void startDeepSleep(InputManager& inputMgr);

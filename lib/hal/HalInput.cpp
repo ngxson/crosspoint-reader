@@ -69,17 +69,17 @@ unsigned long HalInput::getHeldTime() const {
 #endif
 }
 
-void HalInput::setupGpioWakeup() {
+void startDeepSleep(InputManager& inputMgr) {
 #if CROSSPOINT_EMULATED == 0
   esp_deep_sleep_enable_gpio_wakeup(1ULL << InputManager::POWER_BUTTON_PIN, ESP_GPIO_WAKEUP_GPIO_LOW);
   // Ensure that the power button has been released to avoid immediately turning back on if you're holding it
-  while (isPressed(InputManager::BTN_POWER)) {
+  while (inputMgr.isPressed(InputManager::BTN_POWER)) {
     delay(50);
-    update();
+    inputMgr.update();
   }
   // Enter Deep Sleep
   esp_deep_sleep_start();
 #else
-  // TODO
+  Serial.println("[   ] GPIO wakeup setup skipped in emulation mode.");
 #endif
 }
