@@ -9,33 +9,19 @@ void HalGPIO::begin() {
   pinMode(UART0_RXD, INPUT);
 }
 
-void HalGPIO::update() {
-  inputMgr.update();
-}
+void HalGPIO::update() { inputMgr.update(); }
 
-bool HalGPIO::isPressed(uint8_t buttonIndex) const {
-  return inputMgr.isPressed(buttonIndex);
-}
+bool HalGPIO::isPressed(uint8_t buttonIndex) const { return inputMgr.isPressed(buttonIndex); }
 
-bool HalGPIO::wasPressed(uint8_t buttonIndex) const {
-  return inputMgr.wasPressed(buttonIndex);
-}
+bool HalGPIO::wasPressed(uint8_t buttonIndex) const { return inputMgr.wasPressed(buttonIndex); }
 
-bool HalGPIO::wasAnyPressed() const {
-  return inputMgr.wasAnyPressed();
-}
+bool HalGPIO::wasAnyPressed() const { return inputMgr.wasAnyPressed(); }
 
-bool HalGPIO::wasReleased(uint8_t buttonIndex) const {
-  return inputMgr.wasReleased(buttonIndex);
-}
+bool HalGPIO::wasReleased(uint8_t buttonIndex) const { return inputMgr.wasReleased(buttonIndex); }
 
-bool HalGPIO::wasAnyReleased() const {
-  return inputMgr.wasAnyReleased();
-}
+bool HalGPIO::wasAnyReleased() const { return inputMgr.wasAnyReleased(); }
 
-unsigned long HalGPIO::getHeldTime() const {
-  return inputMgr.getHeldTime();
-}
+unsigned long HalGPIO::getHeldTime() const { return inputMgr.getHeldTime(); }
 
 void HalGPIO::startDeepSleep() {
   esp_deep_sleep_enable_gpio_wakeup(1ULL << InputManager::POWER_BUTTON_PIN, ESP_GPIO_WAKEUP_GPIO_LOW);

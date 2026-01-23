@@ -1,7 +1,7 @@
 #pragma once
 
-#include <HalDisplay.h>
 #include <EpdFontFamily.h>
+#include <HalDisplay.h>
 
 #include <map>
 

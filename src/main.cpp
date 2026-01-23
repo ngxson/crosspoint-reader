@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include <Epub.h>
 #include <GfxRenderer.h>
-#include <SDCardManager.h>
-#include <HalGPIO.h>
 #include <HalDisplay.h>
+#include <HalGPIO.h>
+#include <SDCardManager.h>
 #include <SPI.h>
 #include <builtinFonts/all.h>
 
@@ -341,8 +341,7 @@ void loop() {
 
   // Check for any user activity (button press or release) or active background work
   static unsigned long lastActivityTime = millis();
-  if (gpio.wasAnyPressed() || gpio.wasAnyReleased() ||
-      (currentActivity && currentActivity->preventAutoSleep())) {
+  if (gpio.wasAnyPressed() || gpio.wasAnyReleased() || (currentActivity && currentActivity->preventAutoSleep())) {
     lastActivityTime = millis();  // Reset inactivity timer
   }
 
@@ -354,8 +353,7 @@ void loop() {
     return;
   }
 
-  if (gpio.isPressed(HalGPIO::BTN_POWER) &&
-      gpio.getHeldTime() > SETTINGS.getPowerButtonDuration()) {
+  if (gpio.isPressed(HalGPIO::BTN_POWER) && gpio.getHeldTime() > SETTINGS.getPowerButtonDuration()) {
     enterDeepSleep();
     // This should never be hit as `enterDeepSleep` calls esp_deep_sleep_start
     return;

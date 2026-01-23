@@ -1,6 +1,6 @@
 #pragma once
-#include <HalDisplay.h>
 #include <EpdFontFamily.h>
+#include <HalDisplay.h>
 
 #include <string>
 #include <utility>

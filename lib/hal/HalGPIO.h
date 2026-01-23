@@ -1,8 +1,8 @@
 #pragma once
 
 #include <Arduino.h>
-#include <InputManager.h>
 #include <BatteryMonitor.h>
+#include <InputManager.h>
 
 // Display SPI pins (custom pins for XteinkX4, not hardware SPI defaults)
 #define EPD_SCLK 8   // SPI Clock
@@ -12,11 +12,11 @@
 #define EPD_RST 5    // Reset
 #define EPD_BUSY 6   // Busy
 
-#define SPI_MISO 7   // SPI MISO, shared between SD card and display (Master In Slave Out)
+#define SPI_MISO 7  // SPI MISO, shared between SD card and display (Master In Slave Out)
 
 #define BAT_GPIO0 0  // Battery voltage
 
-#define UART0_RXD 20 // Used for USB connection detection
+#define UART0_RXD 20  // Used for USB connection detection
 
 class HalGPIO {
 #if CROSSPOINT_EMULATED == 0
