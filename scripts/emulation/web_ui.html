@@ -153,6 +153,46 @@
       ctx.putImageData(imageData, 0, 0);
     }
 
+    let btn0Pressed = false;
+    let btn1Pressed = false;
+    let btn2Pressed = false;
+    let btn3Pressed = false;
+    let btnUpPressed = false;
+    let btnDownPressed = false;
+    let btnPowerPressed = false;
+
+    let buttonState = 0;
+    function sendButtonState() {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          type: 'button_state',
+          state: buttonState
+        }));
+        appendLog('info', `Sent button state: ${buttonState}`);
+      } else {
+        appendLog('error', 'WebSocket not connected');
+      }
+    }
+
+    function setupButtonHandler(buttonId, bitIndex) {
+      const button = document.getElementById(buttonId);
+      button.onmousedown = () => {
+        buttonState ^= (1 << bitIndex);
+        sendButtonState();
+      };
+      button.onmouseup = () => {
+        buttonState &= ~(1 << bitIndex);
+        sendButtonState();
+      };
+    }
+    setupButtonHandler('btn0', 0);
+    setupButtonHandler('btn1', 1);
+    setupButtonHandler('btn2', 2);
+    setupButtonHandler('btn3', 3);
+    setupButtonHandler('btnU', 4);
+    setupButtonHandler('btnD', 5);
+    setupButtonHandler('btnP', 6);
+
     function connect() {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const wsUrl = `${protocol}//${window.location.host}/ws`;

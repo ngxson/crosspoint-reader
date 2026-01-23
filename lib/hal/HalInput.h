@@ -31,8 +31,20 @@ class HalInput {
   static constexpr uint8_t BTN_UP = 4;
   static constexpr uint8_t BTN_DOWN = 5;
   static constexpr uint8_t BTN_POWER = 6;
+
+ private:
+  // emulation state
+  uint8_t currentState;
+  uint8_t lastState;
+  uint8_t pressedEvents;
+  uint8_t releasedEvents;
+  unsigned long lastDebounceTime;
+  unsigned long buttonPressStart;
+  unsigned long buttonPressFinish;
 };
 
+// TODO @ngxson : this is a trick to avoid changing too many files at once.
+// consider refactoring in a dedicated PR later.
 #if CROSSPOINT_EMULATED == 1
 using InputManager = HalInput;
 #endif

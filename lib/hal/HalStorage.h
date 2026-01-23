@@ -113,6 +113,8 @@ class HalStorage {
   bool is_emulated = CROSSPOINT_EMULATED;
 };
 
+// TODO @ngxson : this is a trick to avoid changing too many files at once.
+// consider refactoring in a dedicated PR later.
 #if CROSSPOINT_EMULATED == 1
 #define SdMan HalStorage::getInstance()
 #endif

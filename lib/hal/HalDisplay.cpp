@@ -83,11 +83,11 @@ void HalDisplay::refreshDisplay(RefreshMode mode, bool turnOffScreen) {
     Serial.printf("[%lu] [   ] Emulated refresh display with mode %d, turnOffScreen %d\n", millis(), static_cast<int>(mode), turnOffScreen);
     // emulated delay
     if (mode == RefreshMode::FAST_REFRESH) {
-      delay(50);
+      delay(500);
     } else if (mode == RefreshMode::HALF_REFRESH) {
-      delay(800);
+      delay(1000);
     } else if (mode == RefreshMode::FULL_REFRESH) {
-      delay(1500);
+      delay(2000);
     }
   }
 }

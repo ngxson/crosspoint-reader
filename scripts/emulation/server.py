@@ -205,10 +205,11 @@ async def send_response(response: str):
 
 
 LAST_DISPLAY_BUFFER = None
+BUTTON_STATE = 0
 
 async def handle_command(command: str, args: list[str]) -> bool:
   """Handle a command from the device. Returns True if handled."""
-  global sdcard_handler, LAST_DISPLAY_BUFFER
+  global sdcard_handler, LAST_DISPLAY_BUFFER, BUTTON_STATE
 
   try:
     if command == "DISPLAY":
@@ -274,6 +275,16 @@ async def handle_command(command: str, args: list[str]) -> bool:
       print(f"[Emulator] FS_RM {path} -> {result}", flush=True)
       await send_response(str(result))
       return True
+    
+    elif command == "BUTTON":
+      # arg0: action
+      action = args[0]
+      if action != "read":
+        raise ValueError("Only read action is supported")
+      # no log (too frequent)
+      # print(f"[Emulator] BUTTON command received: {action}", flush=True)
+      await send_response(str(BUTTON_STATE))
+      return True
 
     else:
       print(f"[Emulator] Unknown command: {command}", flush=True)
@@ -284,7 +295,9 @@ async def handle_command(command: str, args: list[str]) -> bool:
     return False
 
 
-def process_message(message: str, for_ui: bool) -> str:
+def process_message(message: str, for_ui: bool) -> str | None:
+  if message.startswith("$$CMD_BUTTON:"):
+    return None # Too frequent, ignore
   if message.startswith("$$CMD_"):
     if for_ui:
       return message
@@ -338,18 +351,23 @@ async def read_stream(stream: asyncio.StreamReader, stream_type: str):
         if parsed:
           command, args = parsed
           await handle_command(command, args)
-          # Still broadcast to UI for visibility
-          await broadcast_message(stream_type, decoded_line)
+          if command == "DISPLAY":
+            await broadcast_message(stream_type, decoded_line)
           continue
 
+        to_stdio = process_message(decoded_line, for_ui=False)
+        to_ws = process_message(decoded_line, for_ui=True)
+
         # Forward to parent process
-        if stream_type == "stdout":
-          print(process_message(decoded_line, for_ui=False), flush=True)
-        else:
-          print(process_message(decoded_line, for_ui=False), file=sys.stderr, flush=True)
+        if to_stdio is not None:
+          if stream_type == "stdout":
+            print(to_stdio, flush=True)
+          else:
+            print(to_stdio, file=sys.stderr, flush=True)
 
         # Broadcast to WebSocket clients
-        await broadcast_message(stream_type, process_message(decoded_line, for_ui=True))
+        if to_ws is not None:
+          await broadcast_message(stream_type, to_ws)
 
     except Exception as e:
       print(f"Error reading {stream_type}: {e}", file=sys.stderr)
@@ -436,16 +454,25 @@ async def websocket_handler(websocket: WebSocketServerProtocol):
         "data": f"$$CMD_DISPLAY:{LAST_DISPLAY_BUFFER}$$"
       }))
 
-    # Handle incoming messages (for stdin forwarding)
+    # Handle incoming messages (for stdin forwarding and events)
     async for message in websocket:
       try:
         data = json.loads(message)
-        if data.get("type") == "stdin" and qemu_process and qemu_process.stdin:
+        msg_type = data.get("type")
+        
+        if msg_type == "stdin" and qemu_process and qemu_process.stdin:
           input_data = data.get("data", "")
           qemu_process.stdin.write((input_data + "\n").encode())
           await qemu_process.stdin.drain()
+        elif msg_type == "button_state":
+          global BUTTON_STATE
+          BUTTON_STATE = int(data.get("state", "0"))
+          print(f"[WebUI] Button state updated to {BUTTON_STATE}", flush=True)
+        else:
+          # Print any other messages for debugging
+          print(f"[WebUI Message] {message}", flush=True)
       except json.JSONDecodeError:
-        pass
+        print(f"[WebUI] Invalid JSON received: {message}", file=sys.stderr)
       except Exception as e:
         print(f"Error handling client message: {e}", file=sys.stderr)
 

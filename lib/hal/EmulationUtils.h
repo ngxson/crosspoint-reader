@@ -18,12 +18,18 @@ static const char* CMD_FS_STAT  = "FS_STAT";  // arg0: path -- return file size 
 static const char* CMD_FS_WRITE = "FS_WRITE"; // arg0: path, arg1: base64-encoded data, arg2: offset, arg3: is inplace (0/1) -- return int64_t bytes written
 static const char* CMD_FS_MKDIR = "FS_MKDIR"; // arg0: path -- return int64_t: 0=success
 static const char* CMD_FS_RM    = "FS_RM";    // arg0: path -- return int64_t: 0=success
+static const char* CMD_BUTTON   = "BUTTON";   // arg0: action ("read") -- return int64_t: HalInput state bitmask
 
 static std::string base64_encode(const char* buf, unsigned int bufLen);
 static std::vector<uint8_t> base64_decode(const char* encoded_string, unsigned int in_len);
 
+static SemaphoreHandle_t sendMutex = xSemaphoreCreateMutex();
+
 static void sendCmd(const char* cmd, const char* arg0 = nullptr, const char* arg1 = nullptr, const char* arg2 = nullptr, const char* arg3 = nullptr) {
-  Serial.printf("[%lu] [EMU] Sending command: %s\n", millis(), cmd);
+  xSemaphoreTake(sendMutex, portMAX_DELAY);
+  if (cmd != CMD_BUTTON) {
+    Serial.printf("[%lu] [EMU] Sending command: %s\n", millis(), cmd);
+  }
   Serial.print("$$CMD_");
   Serial.print(cmd);
   if (arg0 != nullptr) {
@@ -45,6 +51,7 @@ static void sendCmd(const char* cmd, const char* arg0 = nullptr, const char* arg
     Serial.print(arg3);
   }
   Serial.print("$$\n");
+  xSemaphoreGive(sendMutex);
 }
 
 static String recvRespStr() {
