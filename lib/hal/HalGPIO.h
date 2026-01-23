@@ -55,14 +55,4 @@ class HalGPIO {
   static constexpr uint8_t BTN_UP = 4;
   static constexpr uint8_t BTN_DOWN = 5;
   static constexpr uint8_t BTN_POWER = 6;
-
- private:
-  // emulation state
-  uint8_t currentState;
-  uint8_t lastState;
-  uint8_t pressedEvents;
-  uint8_t releasedEvents;
-  unsigned long lastDebounceTime;
-  unsigned long buttonPressStart;
-  unsigned long buttonPressFinish;
 };
