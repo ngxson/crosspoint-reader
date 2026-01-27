@@ -266,16 +266,6 @@ void setupDisplayAndFonts() {
   Serial.printf("[%lu] [   ] Fonts setup\n", millis());
 }
 
-bool isWakeupByPowerButton() {
-  const auto wakeupCause = esp_sleep_get_wakeup_cause();
-  const auto resetReason = esp_reset_reason();
-  if (gpio.isUsbConnected()) {
-    return wakeupCause == ESP_SLEEP_WAKEUP_GPIO;
-  } else {
-    return (wakeupCause == ESP_SLEEP_WAKEUP_UNDEFINED) && (resetReason == ESP_RST_POWERON);
-  }
-}
-
 void setup() {
   t1 = millis();
 
@@ -304,7 +294,7 @@ void setup() {
   SETTINGS.loadFromFile();
   KOREADER_STORE.loadFromFile();
 
-  if (isWakeupByPowerButton()) {
+  if (gpio.isWakeupByPowerButton()) {
     // For normal wakeups, verify power button press duration
     Serial.printf("[%lu] [   ] Verifying power button press duration\n", millis());
     verifyPowerButtonDuration();
