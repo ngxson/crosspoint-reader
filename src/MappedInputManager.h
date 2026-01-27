@@ -25,5 +25,6 @@ class MappedInputManager {
 
  private:
   HalGPIO& gpio;
-  decltype(HalGPIO::BTN_BACK) mapButton(Button button) const;
+
+  bool mapButton(Button button, bool (HalGPIO::*fn)(uint8_t) const) const;
 };
