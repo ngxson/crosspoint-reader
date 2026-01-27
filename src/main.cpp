@@ -289,13 +289,6 @@ bool isUsbConnected() {
   return digitalRead(UART0_RXD) == HIGH;
 }
 
-bool isWakeupAfterFlashing() {
-  const auto wakeupCause = esp_sleep_get_wakeup_cause();
-  const auto resetReason = esp_reset_reason();
-
-  return isUsbConnected() && (wakeupCause == ESP_SLEEP_WAKEUP_UNDEFINED) && (resetReason == ESP_RST_UNKNOWN);
-}
-
 bool isWakeupByPowerButton() {
   const auto wakeupCause = esp_sleep_get_wakeup_cause();
   const auto resetReason = esp_reset_reason();
