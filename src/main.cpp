@@ -314,6 +314,15 @@ void setup() {
   }
 
   inputManager.begin();
+
+  // Enable "safe guard" if one of the face buttons is held during boot
+  // This will delay the boot process by 5 seconds, leaving enough time for devs to fix misconfigured devices
+  // NOTE: This must ALWAYS have the highest priority in the boot process to allow recovery
+  if (digitalRead(1) == LOW) {
+    Serial.printf("[%lu] [   ] Safe guard mode enabled, delaying boot by 5 seconds\n", millis());
+    delay(5000);
+  }
+
   // Initialize pins
   pinMode(BAT_GPIO0, INPUT);
 
