@@ -11,11 +11,14 @@ class ResourcesFS {
   ResourcesFS() = default;
   ~ResourcesFS() = default;
 
+  // FIXME: true MAX_ALLOC_SIZE = ~3.5MB but not enough pages to do mmap
+  // See: spi_flash_mmap_get_free_pages() --> ~31 free pages on real device
+
   static constexpr size_t MAX_FILES = 32;
   static constexpr size_t MAX_FILE_NAME_LENGTH = 32;
-  static constexpr size_t MAX_ALLOC_SIZE = 3 * 1024 * 1024;  // 3 MB
-  static constexpr size_t ALIGNMENT = 4;                     // bytes
-  static constexpr uint32_t MAGIC = 0x46535631;              // "FSV1"
+  static constexpr size_t MAX_ALLOC_SIZE = 28 * 64 * 1024;  // 28 pages == ~1.8 MB
+  static constexpr size_t ALIGNMENT = 4;                    // bytes
+  static constexpr uint32_t MAGIC = 0x46535631;             // "FSV1"
 
   enum FileType {
     FILETYPE_INVALID = 0,

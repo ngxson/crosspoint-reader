@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ResourcesFS.h"
 
 #include <Arduino.h>
@@ -35,7 +33,6 @@ bool ResourcesFS::begin(bool remount) {
   spi_flash_mmap_handle_t map_handle;  // unused
   size_t len = impl->partition->size;
   if (len > MAX_ALLOC_SIZE) {
-    // FIXME: cannot mmap too large region at once, why?
     len = MAX_ALLOC_SIZE;
   }
 
