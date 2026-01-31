@@ -174,6 +174,7 @@ void HomeActivity::loop() {
     const int continueIdx = hasContinueReading ? idx++ : -1;
     const int myLibraryIdx = idx++;
     const int opdsLibraryIdx = hasOpdsUrl ? idx++ : -1;
+    const int appsIdx = idx++;
     const int fileTransferIdx = idx++;
     const int settingsIdx = idx;
 
@@ -183,6 +184,8 @@ void HomeActivity::loop() {
       onMyLibraryOpen();
     } else if (selectorIndex == opdsLibraryIdx) {
       onOpdsBrowserOpen();
+    } else if (selectorIndex == appsIdx) {
+      onAppsOpen();
     } else if (selectorIndex == fileTransferIdx) {
       onFileTransferOpen();
     } else if (selectorIndex == settingsIdx) {
@@ -503,7 +506,7 @@ void HomeActivity::render() {
 
   // --- Bottom menu tiles ---
   // Build menu items dynamically
-  std::vector<const char*> menuItems = {"My Library", "File Transfer", "Settings"};
+  std::vector<const char*> menuItems = {"My Library", "Applications", "File Transfer", "Settings"};
   if (hasOpdsUrl) {
     // Insert OPDS Browser after My Library
     menuItems.insert(menuItems.begin() + 1, "OPDS Browser");

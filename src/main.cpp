@@ -15,6 +15,7 @@
 #include "KOReaderCredentialStore.h"
 #include "MappedInputManager.h"
 #include "RecentBooksStore.h"
+#include "activities/app/AppActivity.h"
 #include "activities/boot_sleep/BootActivity.h"
 #include "activities/boot_sleep/SleepActivity.h"
 #include "activities/browser/OpdsBookBrowserActivity.h"
@@ -236,10 +237,15 @@ void onGoToBrowser() {
   enterNewActivity(new OpdsBookBrowserActivity(renderer, mappedInputManager, onGoHome));
 }
 
+void onGoToApps() {
+  exitActivity();
+  enterNewActivity(new AppActivity(renderer, mappedInputManager, onGoHome));
+}
+
 void onGoHome() {
   exitActivity();
   enterNewActivity(new HomeActivity(renderer, mappedInputManager, onContinueReading, onGoToMyLibrary, onGoToSettings,
-                                    onGoToFileTransfer, onGoToBrowser));
+                                    onGoToFileTransfer, onGoToBrowser, onGoToApps));
 }
 
 void setupDisplayAndFonts() {
