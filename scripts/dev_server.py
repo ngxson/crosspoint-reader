@@ -6,10 +6,14 @@ import re
 import shutil
 import signal
 import sys
+from http import HTTPStatus
 from pathlib import Path
 from typing import Set
 
 import serial
+import websockets
+from websockets.http11 import Response
+from websockets.server import WebSocketServerProtocol
 import glob
 import time
 
@@ -31,7 +35,6 @@ SERIAL_BAUD = 115200
 is_in_dfu_mode = False
 
 sdcard_path = os.environ.get("SDCARD_PATH", "./.sdcard")
-
 
 # SD card emulation directory
 if not os.path.exists(sdcard_path):
@@ -73,7 +76,6 @@ class SdCardHandler:
           entries.append(entry + "/")
         else:
           entries.append(entry)
-      entries = [e for e in entries if e not in ("/", ".", "..")]  # Filter out /, ., ..
       return entries
     except Exception as e:
       print(f"[SdCard] Error listing {path}: {e}", file=sys.stderr)
@@ -212,6 +214,10 @@ class SdCardHandler:
 # Global SD card handler instance
 sdcard_handler = SdCardHandler(sdcard_path)
 
+
+# WebSocket clients
+connected_clients: Set[WebSocketServerProtocol] = set()
+
 # Command pattern: $$CMD_(COMMAND):(ARG0)[:(ARG1)][:(ARG2)][:(ARG3)]$$
 CMD_PATTERN = re.compile(r'^\$\$CMD_([A-Z_]+):(.+)\$\$$')
 
@@ -258,6 +264,14 @@ async def handle_command(command: str, args: list[str]) -> bool:
     if command == "PING":
       await send_response(str("123456"))
       print(f"[Emulator] PING command responded", flush=True)
+      return True
+
+    elif command == "DISPLAY":
+      # Display command - no response needed
+      # arg0: base64-encoded buffer
+      print(f"[Emulator] DISPLAY command received (buffer size: {len(args[0]) if args else 0})", flush=True)
+      LAST_DISPLAY_BUFFER = args[0] if args else None
+      await send_response(str("0"))  # Acknowledge
       return True
 
     elif command == "FS_LIST":
@@ -349,9 +363,21 @@ def process_message(message: str, for_ui: bool) -> str | None:
 
 
 async def broadcast_message(msg_type: str, data: str):
-  """Placeholder for websocket implementation in the future"""
-  del msg_type  # Unused for now
-  del data  # Unused for now
+  """Broadcast a message to all connected WebSocket clients."""
+  if not connected_clients:
+    return
+
+  message = json.dumps({"type": msg_type, "data": data})
+
+  # Send to all clients, remove disconnected ones
+  disconnected = set()
+  for client in connected_clients:
+    try:
+      await client.send(message)
+    except websockets.exceptions.ConnectionClosed:
+      disconnected.add(client)
+
+  connected_clients.difference_update(disconnected)
 
 
 async def read_serial():
@@ -518,9 +544,72 @@ async def open_serial():
       await asyncio.sleep(RETRY_INTERVAL)
 
 
+async def websocket_handler(websocket: WebSocketServerProtocol):
+  """Handle a WebSocket connection."""
+  connected_clients.add(websocket)
+  print(f"Client connected. Total clients: {len(connected_clients)}", flush=True)
+
+  try:
+    # Send a welcome message
+    await websocket.send(json.dumps({
+      "type": "info",
+      "data": "Connected to CrossPoint emulator"
+    }))
+
+    # Send the last display buffer if available
+    if LAST_DISPLAY_BUFFER is not None:
+      await websocket.send(json.dumps({
+        "type": "stdout",
+        "data": f"$$CMD_DISPLAY:{LAST_DISPLAY_BUFFER}$$"
+      }))
+
+    # Handle incoming messages (for stdin forwarding and events)
+    async for message in websocket:
+      try:
+        data = json.loads(message)
+        msg_type = data.get("type")
+        
+        if msg_type == "stdin" and serial_port and serial_port.is_open:
+          input_data = data.get("data", "")
+          serial_port.write((input_data + "\n").encode())
+          serial_port.flush()
+        elif msg_type == "button_state":
+          global BUTTON_STATE
+          BUTTON_STATE = int(data.get("state", "0"))
+          print(f"[WebUI] Button state updated to {BUTTON_STATE}", flush=True)
+        else:
+          # Print any other messages for debugging
+          print(f"[WebUI Message] {message}", flush=True)
+      except json.JSONDecodeError:
+        print(f"[WebUI] Invalid JSON received: {message}", file=sys.stderr)
+      except Exception as e:
+        print(f"Error handling client message: {e}", file=sys.stderr)
+
+  except websockets.exceptions.ConnectionClosed:
+    pass
+  finally:
+    connected_clients.discard(websocket)
+    print(f"Client disconnected. Total clients: {len(connected_clients)}", flush=True)
+
+
 async def main():
   """Main entry point."""
-  await open_serial()
+  host = os.environ.get("HOST", "127.0.0.1")
+  port = int(os.environ.get("PORT", "8090"))
+
+  print(f"Starting WebSocket server on {host}:{port}", flush=True)
+
+  # Start WebSocket server
+  async with websockets.serve(
+    websocket_handler, host, port,
+    process_request=process_request,
+    origins=None,
+  ):
+    print(f"WebSocket server running on ws://{host}:{port}/ws", flush=True)
+    print(f"Web UI available at http://{host}:{port}/", flush=True)
+
+    # Open serial port and read from it
+    await open_serial()
 
 
 def signal_handler(signum, frame):
@@ -529,6 +618,36 @@ def signal_handler(signum, frame):
   if serial_port and serial_port.is_open:
     serial_port.close()
   sys.exit(0)
+
+
+def process_request(connection, request):
+  """Handle HTTP requests for serving static files."""
+  path = request.path
+
+  if path == "/" or path == "/dev_server_ui.html":
+    # Serve the dev_server_ui.html file
+    html_path = Path(__file__).parent / "dev_server_ui.html"
+    try:
+      content = html_path.read_bytes()
+      return Response(
+        HTTPStatus.OK,
+        "OK",
+        websockets.Headers([
+          ("Content-Type", "text/html; charset=utf-8"),
+          ("Content-Length", str(len(content))),
+        ]),
+        content
+      )
+    except FileNotFoundError:
+      return Response(HTTPStatus.NOT_FOUND, "Not Found", websockets.Headers(), b"dev_server_ui.html not found")
+
+  if path == "/ws":
+    # Return None to continue with WebSocket handshake
+    return None
+
+  # Return 404 for other paths
+  return Response(HTTPStatus.NOT_FOUND, "Not Found", websockets.Headers(), b"Not found")
+
 
 if __name__ == "__main__":
   # Set up signal handlers
