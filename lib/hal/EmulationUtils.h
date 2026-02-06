@@ -39,6 +39,7 @@ std::vector<uint8_t> base64_decode(const char* encoded_string, unsigned int in_l
 // IMPORTANT: Must use lock to ensure only one EmulationUtils operation is active at a time
 class Lock {
  public:
+  UBaseType_t prevPriority;
   Lock();
   ~Lock();
 };

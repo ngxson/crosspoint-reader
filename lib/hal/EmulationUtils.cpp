@@ -7,9 +7,16 @@ static SemaphoreHandle_t emuMutex = xSemaphoreCreateMutex();
 
 namespace EmulationUtils {
 
-Lock::Lock() { xSemaphoreTake(emuMutex, portMAX_DELAY); }
+Lock::Lock() {
+  prevPriority = uxTaskPriorityGet(NULL);
+  vTaskPrioritySet(NULL, configMAX_PRIORITIES - 1);
+  xSemaphoreTake(emuMutex, portMAX_DELAY);
+}
 
-Lock::~Lock() { xSemaphoreGive(emuMutex); }
+Lock::~Lock() {
+  xSemaphoreGive(emuMutex);
+  vTaskPrioritySet(NULL, prevPriority);
+}
 
 static const std::string base64_chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
