@@ -70,6 +70,7 @@ class GfxRenderer {
   // void displayWindow(int x, int y, int width, int height) const;
   void invertScreen() const;
   void clearScreen(uint8_t color = 0xFF) const;
+  void getOrientedViewableTRBL(int* outTop, int* outRight, int* outBottom, int* outLeft) const;
 
   // Drawing
   void drawPixel(int x, int y, bool state = true) const;
@@ -121,8 +122,5 @@ class GfxRenderer {
   void cleanupGrayscaleWithFrameBuffer() const;
 
   // Low level functions
-  uint8_t* getFrameBuffer() const;
   static size_t getBufferSize();
-  void grayscaleRevert() const;
-  void getOrientedViewableTRBL(int* outTop, int* outRight, int* outBottom, int* outLeft) const;
 };
