@@ -611,7 +611,13 @@ void GfxRenderer::fillPolygon(const int* xPoints, const int* yPoints, int numPoi
   free(nodeX);
 }
 
-void GfxRenderer::clearScreen(const uint8_t color) const { display.clearScreen(color); }
+// For performance measurement (using static to allow "const" methods)
+static unsigned long start_ms = 0;
+
+void GfxRenderer::clearScreen(const uint8_t color) const {
+  start_ms = millis();
+  display.clearScreen(color);
+}
 
 void GfxRenderer::invertScreen() const {
   uint8_t* buffer = display.getFrameBuffer();
@@ -625,6 +631,8 @@ void GfxRenderer::invertScreen() const {
 }
 
 void GfxRenderer::displayBuffer(const HalDisplay::RefreshMode refreshMode) const {
+  auto elapsed = millis() - start_ms;
+  Serial.printf("[%lu] [GFX] Time = %lu ms from clearScreen to displayBuffer\n", millis(), elapsed);
   display.displayBuffer(refreshMode, fadingFix);
 }
 
@@ -807,6 +815,8 @@ void GfxRenderer::drawTextRotated90CW(const int fontId, const int x, const int y
     yPos -= glyph->advanceX;
   }
 }
+
+uint8_t* GfxRenderer::getFrameBuffer() const { return display.getFrameBuffer(); }
 
 size_t GfxRenderer::getBufferSize() { return HalDisplay::BUFFER_SIZE; }
 

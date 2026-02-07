@@ -122,5 +122,6 @@ class GfxRenderer {
   void cleanupGrayscaleWithFrameBuffer() const;
 
   // Low level functions
+  uint8_t* getFrameBuffer() const;
   static size_t getBufferSize();
 };
