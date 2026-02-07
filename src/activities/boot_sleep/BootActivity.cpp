@@ -16,5 +16,5 @@ void BootActivity::onEnter() {
   renderer.drawCenteredText(UI_10_FONT_ID, pageHeight / 2 + 70, "CrossPoint", true, EpdFontFamily::BOLD);
   renderer.drawCenteredText(SMALL_FONT_ID, pageHeight / 2 + 95, "BOOTING");
   renderer.drawCenteredText(SMALL_FONT_ID, pageHeight - 30, CROSSPOINT_VERSION);
-  renderer.displayBuffer();
+  renderer.displayBuffer(HalDisplay::HALF_REFRESH, true);
 }

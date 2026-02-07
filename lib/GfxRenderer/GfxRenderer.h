@@ -42,9 +42,14 @@ class GfxRenderer {
   void drawPixelDither(int x, int y, Color color) const;
   void fillArc(int maxRadius, int cx, int cy, int xDir, int yDir, Color color) const;
 
+  // For async displayBuffer
+  SemaphoreHandle_t frameBufferMutex = nullptr;
+
  public:
   explicit GfxRenderer(HalDisplay& halDisplay)
-      : display(halDisplay), renderMode(BW), orientation(Portrait), fadingFix(false) {}
+      : display(halDisplay), renderMode(BW), orientation(Portrait), fadingFix(false) {
+    frameBufferMutex = xSemaphoreCreateMutex();
+  }
   ~GfxRenderer() { freeBwBufferChunks(); }
 
   static constexpr int VIEWABLE_MARGIN_TOP = 9;
@@ -65,7 +70,7 @@ class GfxRenderer {
   // Screen ops
   int getScreenWidth() const;
   int getScreenHeight() const;
-  void displayBuffer(HalDisplay::RefreshMode refreshMode = HalDisplay::FAST_REFRESH) const;
+  void displayBuffer(HalDisplay::RefreshMode refreshMode = HalDisplay::FAST_REFRESH, bool async = false) const;
   // EXPERIMENTAL: Windowed update - display only a rectangular region
   // void displayWindow(int x, int y, int width, int height) const;
   void invertScreen() const;

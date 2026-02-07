@@ -611,7 +611,11 @@ void GfxRenderer::fillPolygon(const int* xPoints, const int* yPoints, int numPoi
   free(nodeX);
 }
 
-void GfxRenderer::clearScreen(const uint8_t color) const { display.clearScreen(color); }
+void GfxRenderer::clearScreen(const uint8_t color) const {
+  xSemaphoreTake(frameBufferMutex, portMAX_DELAY);
+  display.clearScreen(color);
+  xSemaphoreGive(frameBufferMutex);
+}
 
 void GfxRenderer::invertScreen() const {
   uint8_t* buffer = display.getFrameBuffer();
@@ -624,8 +628,35 @@ void GfxRenderer::invertScreen() const {
   }
 }
 
-void GfxRenderer::displayBuffer(const HalDisplay::RefreshMode refreshMode) const {
-  display.displayBuffer(refreshMode, fadingFix);
+struct DisplayBufferTaskParam {
+  const GfxRenderer* renderer;
+  HalDisplay::RefreshMode refreshMode;
+};
+
+[[noreturn]] static void displayBufferTask(void* p) {
+  auto* params = static_cast<DisplayBufferTaskParam*>(p);
+  params->renderer->displayBuffer(params->refreshMode, false);
+  delete params;
+  vTaskDelete(nullptr); // Self-delete the task after completion
+  // Should never reach here
+  while (true) {}
+}
+
+void GfxRenderer::displayBuffer(const HalDisplay::RefreshMode refreshMode, bool async) const {
+  xSemaphoreTake(frameBufferMutex, portMAX_DELAY);
+  if (async) {
+    TaskHandle_t handler = nullptr; // unused
+    DisplayBufferTaskParam* params = new DisplayBufferTaskParam{this, refreshMode};
+    xTaskCreate(&displayBufferTask, "DisplayBufferTask",
+                1024,     // Stack size
+                params,   // Parameters
+                1,        // Priority
+                &handler  // Task handle
+    );
+  } else {
+    display.displayBuffer(refreshMode, fadingFix);
+  }
+  xSemaphoreGive(frameBufferMutex);
 }
 
 std::string GfxRenderer::truncatedText(const int fontId, const char* text, const int maxWidth,
