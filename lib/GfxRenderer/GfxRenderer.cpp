@@ -637,18 +637,20 @@ struct DisplayBufferTaskParam {
   auto* params = static_cast<DisplayBufferTaskParam*>(p);
   params->renderer->displayBuffer(params->refreshMode, false);
   delete params;
-  vTaskDelete(nullptr); // Self-delete the task after completion
+  vTaskDelete(nullptr);  // Self-delete the task after completion
   // Should never reach here
-  while (true) {}
+  while (true) {
+    vTaskDelay(portMAX_DELAY);
+  }
 }
 
 void GfxRenderer::displayBuffer(const HalDisplay::RefreshMode refreshMode, bool async) const {
   xSemaphoreTake(frameBufferMutex, portMAX_DELAY);
   if (async) {
-    TaskHandle_t handler = nullptr; // unused
+    TaskHandle_t handler = nullptr;  // unused
     DisplayBufferTaskParam* params = new DisplayBufferTaskParam{this, refreshMode};
     xTaskCreate(&displayBufferTask, "DisplayBufferTask",
-                1024,     // Stack size
+                4096,     // Stack size
                 params,   // Parameters
                 1,        // Priority
                 &handler  // Task handle
