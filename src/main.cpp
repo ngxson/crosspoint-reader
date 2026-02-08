@@ -6,6 +6,7 @@
 #include <SDCardManager.h>
 #include <SPI.h>
 #include <builtinFonts/all.h>
+#include <esp_freertos_hooks.h>
 
 #include <cstring>
 
@@ -273,6 +274,48 @@ void setupDisplayAndFonts() {
   Serial.printf("[%lu] [   ] Fonts setup\n", millis());
 }
 
+// Global volatile counter for idle cycles
+static volatile uint32_t idle_counter = 0;
+
+// Calibration value: max idle cycles per measurement interval (determined empirically)
+static uint32_t max_idle_cycles = 0; // Set this after calibration
+
+// Idle hook function: increments counter and returns false to loop
+static bool idle_hook(void) {
+    idle_counter++;
+    return false; // Return false to keep looping in idle task
+}
+
+static char idle_debug_str[50];
+
+// Tick hook function: called every tick (e.g., 1ms)
+static void tick_hook(void) {
+    static uint32_t tick_count = 0;
+    static uint32_t prev_idle = 0;
+
+    tick_count++;
+    if (tick_count >= 1000) { // Every 1000 ticks (1 second, assuming 1ms tick)
+        uint32_t delta_idle = idle_counter - prev_idle;
+        prev_idle = idle_counter;
+
+        // Calculate idle percentage
+        float idle_percent = (float)delta_idle / max_idle_cycles * 100.0f;
+        sprintf(idle_debug_str, "Idle time: %.2f%% (CPU load: %.2f%%)\n", idle_percent, 100.0f - idle_percent);
+
+        tick_count = 0;
+    }
+}
+
+// Function to calibrate: run when system is fully idle
+void calibrate_idle(void) {
+    // Reset counters
+    idle_counter = 0;
+    vTaskDelay(pdMS_TO_TICKS(1000)); // Wait 1 second
+
+    max_idle_cycles = idle_counter;
+    idle_counter = 0; // Reset for normal operation
+}
+
 void setup() {
   t1 = millis();
 
@@ -297,6 +340,13 @@ void setup() {
     enterNewActivity(new FullScreenMessageActivity(renderer, mappedInputManager, "SD card error", EpdFontFamily::BOLD));
     return;
   }
+
+// Register hooks
+    esp_register_freertos_idle_hook(idle_hook);
+    esp_register_freertos_tick_hook(tick_hook);
+
+    // First, calibrate (ensure no other tasks are running)
+    calibrate_idle();
 
   SETTINGS.loadFromFile();
   KOREADER_STORE.loadFromFile();
@@ -360,6 +410,9 @@ void loop() {
   if (Serial && millis() - lastMemPrint >= 10000) {
     Serial.printf("[%lu] [MEM] Free: %d bytes, Total: %d bytes, Min Free: %d bytes\n", millis(), ESP.getFreeHeap(),
                   ESP.getHeapSize(), ESP.getMinFreeHeap());
+    Serial.printf("[%lu] [IDLE] %s", millis(), idle_debug_str);
+    // Serial.printf("[%lu] [MEM] Idle loop count: %lu\n", millis(), n_idle);
+    // n_idle = 0;
     lastMemPrint = millis();
   }
 
