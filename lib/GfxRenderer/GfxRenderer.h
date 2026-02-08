@@ -39,8 +39,10 @@ class GfxRenderer {
   void renderChar(const EpdFontFamily& fontFamily, uint32_t cp, int* x, const int* y, bool pixelState,
                   EpdFontFamily::Style style) const;
   void freeBwBufferChunks();
-  void drawPixelDither(int x, int y, Color color) const;
-  void fillArc(int maxRadius, int cx, int cy, int xDir, int yDir, Color color) const;
+  template <Color color>
+  void drawPixelDither(int x, int y) const;
+  template <Color color>
+  void fillArc(int maxRadius, int cx, int cy, int xDir, int yDir) const;
 
  public:
   explicit GfxRenderer(HalDisplay& halDisplay)
