@@ -1,10 +1,16 @@
 #include "Activity.h"
 
-[[noreturn]] static void renderTaskTrampoline(void* param) {
+void Activity::renderTaskTrampoline(void* param) {
   auto* self = static_cast<Activity*>(param);
+  self->renderTaskLoop();
+}
+
+void Activity::renderTaskLoop() {
   while (true) {
     ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
-    self->render();
+    xSemaphoreTake(renderingMutex, portMAX_DELAY);
+    render();
+    xSemaphoreGive(renderingMutex);
   }
 }
 
