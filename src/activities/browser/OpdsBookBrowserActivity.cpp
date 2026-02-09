@@ -97,6 +97,19 @@ void OpdsBookBrowserActivity::loop() {
 
   // Handle browsing state
   if (state == BrowserState::BROWSING) {
+    if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
+      if (!entries.empty()) {
+        const auto& entry = entries[selectorIndex];
+        if (entry.type == OpdsEntryType::BOOK) {
+          downloadBook(entry);
+        } else {
+          navigateToEntry(entry);
+        }
+      }
+    } else if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
+      navigateBack();
+    }
+
     // Handle navigation
     if (!entries.empty()) {
       buttonNavigator.onNextRelease([this] {
