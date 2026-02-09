@@ -292,17 +292,20 @@ static char idle_debug_str[50];
 static void tick_hook(void) {
     static uint32_t tick_count = 0;
     static uint32_t prev_idle = 0;
+    static unsigned long last_ms = 0;
 
     tick_count++;
-    if (tick_count >= 1000) { // Every 1000 ticks (1 second, assuming 1ms tick)
+    unsigned long current_ms = millis();
+    if (current_ms - last_ms >= 1000) { // Every 1000ms
         uint32_t delta_idle = idle_counter - prev_idle;
         prev_idle = idle_counter;
 
         // Calculate idle percentage
         float idle_percent = (float)delta_idle / max_idle_cycles * 100.0f;
-        sprintf(idle_debug_str, "Idle time: %.2f%% (CPU load: %.2f%%)\n", idle_percent, 100.0f - idle_percent);
+        sprintf(idle_debug_str, "Idle time: %.2f%% (CPU load: %.2f%%), ticks: %lu\n", idle_percent, 100.0f - idle_percent, tick_count);
 
         tick_count = 0;
+        last_ms = current_ms;
     }
 }
 
