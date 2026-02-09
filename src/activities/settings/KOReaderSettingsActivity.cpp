@@ -44,12 +44,12 @@ void KOReaderSettingsActivity::loop() {
   // Handle navigation
   buttonNavigator.onNext([this] {
     selectedIndex = (selectedIndex + 1) % MENU_ITEMS;
-    updateRequired = true;
+    requestUpdate();
   });
 
   buttonNavigator.onPrevious([this] {
     selectedIndex = (selectedIndex + MENU_ITEMS - 1) % MENU_ITEMS;
-    updateRequired = true;
+    requestUpdate();
   });
 }
 

@@ -111,7 +111,7 @@ void KeyboardEntryActivity::loop() {
 
     const int maxCol = getRowLength(selectedRow) - 1;
     if (selectedCol > maxCol) selectedCol = maxCol;
-    updateRequired = true;
+    requestUpdate();
   });
 
   buttonNavigator.onPressAndContinuous({MappedInputManager::Button::Down}, [this] {
@@ -119,7 +119,7 @@ void KeyboardEntryActivity::loop() {
 
     const int maxCol = getRowLength(selectedRow) - 1;
     if (selectedCol > maxCol) selectedCol = maxCol;
-    updateRequired = true;
+    requestUpdate();
   });
 
   buttonNavigator.onPressAndContinuous({MappedInputManager::Button::Left}, [this] {
@@ -145,7 +145,7 @@ void KeyboardEntryActivity::loop() {
       selectedCol = ButtonNavigator::previousIndex(selectedCol, maxCol + 1);
     }
 
-    updateRequired = true;
+    requestUpdate();
   });
 
   buttonNavigator.onPressAndContinuous({MappedInputManager::Button::Right}, [this] {
@@ -170,7 +170,7 @@ void KeyboardEntryActivity::loop() {
     } else {
       selectedCol = ButtonNavigator::nextIndex(selectedCol, maxCol + 1);
     }
-    updateRequired = true;
+    requestUpdate();
   });
 
   // Selection

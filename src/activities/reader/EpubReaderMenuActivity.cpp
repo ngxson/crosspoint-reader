@@ -22,12 +22,12 @@ void EpubReaderMenuActivity::loop() {
   // Handle navigation
   buttonNavigator.onNext([this] {
     selectedIndex = ButtonNavigator::nextIndex(selectedIndex, static_cast<int>(menuItems.size()));
-    updateRequired = true;
+    requestUpdate();
   });
 
   buttonNavigator.onPrevious([this] {
     selectedIndex = ButtonNavigator::previousIndex(selectedIndex, static_cast<int>(menuItems.size()));
-    updateRequired = true;
+    requestUpdate();
   });
 
   // Use local variables for items we need to check after potential deletion

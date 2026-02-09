@@ -21,10 +21,7 @@ class CalibreSettingsActivity final : public ActivityWithSubactivity {
   void render() override;
 
  private:
-
-
   ButtonNavigator buttonNavigator;
-
 
   int selectedIndex = 0;
   const std::function<void()> onBack;

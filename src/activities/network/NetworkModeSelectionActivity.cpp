@@ -50,12 +50,12 @@ void NetworkModeSelectionActivity::loop() {
   // Handle navigation
   buttonNavigator.onNext([this] {
     selectedIndex = ButtonNavigator::nextIndex(selectedIndex, MENU_ITEM_COUNT);
-    updateRequired = true;
+    requestUpdate();
   });
 
   buttonNavigator.onPrevious([this] {
     selectedIndex = ButtonNavigator::previousIndex(selectedIndex, MENU_ITEM_COUNT);
-    updateRequired = true;
+    requestUpdate();
   });
 }
 

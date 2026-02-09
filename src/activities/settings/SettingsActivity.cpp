@@ -93,24 +93,24 @@ void SettingsActivity::loop() {
   // Handle navigation
   buttonNavigator.onNextRelease([this] {
     selectedSettingIndex = ButtonNavigator::nextIndex(selectedSettingIndex, settingsCount + 1);
-    updateRequired = true;
+    requestUpdate();
   });
 
   buttonNavigator.onPreviousRelease([this] {
     selectedSettingIndex = ButtonNavigator::previousIndex(selectedSettingIndex, settingsCount + 1);
-    updateRequired = true;
+    requestUpdate();
   });
 
   buttonNavigator.onNextContinuous([this, &hasChangedCategory] {
     hasChangedCategory = true;
     selectedCategoryIndex = ButtonNavigator::nextIndex(selectedCategoryIndex, categoryCount);
-    updateRequired = true;
+    requestUpdate();
   });
 
   buttonNavigator.onPreviousContinuous([this, &hasChangedCategory] {
     hasChangedCategory = true;
     selectedCategoryIndex = ButtonNavigator::previousIndex(selectedCategoryIndex, categoryCount);
-    updateRequired = true;
+    requestUpdate();
   });
 
   if (hasChangedCategory) {

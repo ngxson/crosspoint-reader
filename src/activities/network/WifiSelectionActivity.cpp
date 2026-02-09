@@ -386,12 +386,12 @@ void WifiSelectionActivity::loop() {
     // Handle navigation
     buttonNavigator.onNext([this] {
       selectedNetworkIndex = ButtonNavigator::nextIndex(selectedNetworkIndex, networks.size());
-      updateRequired = true;
+      requestUpdate();
     });
 
     buttonNavigator.onPrevious([this] {
       selectedNetworkIndex = ButtonNavigator::previousIndex(selectedNetworkIndex, networks.size());
-      updateRequired = true;
+      requestUpdate();
     });
   }
 }

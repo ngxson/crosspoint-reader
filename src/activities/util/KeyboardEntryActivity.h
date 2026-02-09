@@ -63,9 +63,7 @@ class KeyboardEntryActivity : public Activity {
   size_t maxLength;
   bool isPassword;
 
-
   ButtonNavigator buttonNavigator;
-
 
   // Keyboard state
   int selectedRow = 0;

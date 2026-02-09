@@ -64,22 +64,22 @@ void EpubReaderChapterSelectionActivity::loop() {
 
   buttonNavigator.onNextRelease([this, totalItems] {
     selectorIndex = ButtonNavigator::nextIndex(selectorIndex, totalItems);
-    updateRequired = true;
+    requestUpdate();
   });
 
   buttonNavigator.onPreviousRelease([this, totalItems] {
     selectorIndex = ButtonNavigator::previousIndex(selectorIndex, totalItems);
-    updateRequired = true;
+    requestUpdate();
   });
 
   buttonNavigator.onNextContinuous([this, totalItems, pageItems] {
     selectorIndex = ButtonNavigator::nextPageIndex(selectorIndex, totalItems, pageItems);
-    updateRequired = true;
+    requestUpdate();
   });
 
   buttonNavigator.onPreviousContinuous([this, totalItems, pageItems] {
     selectorIndex = ButtonNavigator::previousPageIndex(selectorIndex, totalItems, pageItems);
-    updateRequired = true;
+    requestUpdate();
   });
 }
 

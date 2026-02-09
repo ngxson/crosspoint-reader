@@ -120,8 +120,6 @@ struct SettingInfo {
 };
 
 class SettingsActivity final : public ActivityWithSubactivity {
-
-
   ButtonNavigator buttonNavigator;
 
   int selectedCategoryIndex = 0;  // Currently selected category

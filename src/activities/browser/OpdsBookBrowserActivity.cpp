@@ -101,22 +101,22 @@ void OpdsBookBrowserActivity::loop() {
     if (!entries.empty()) {
       buttonNavigator.onNextRelease([this] {
         selectorIndex = ButtonNavigator::nextIndex(selectorIndex, entries.size());
-        updateRequired = true;
+        requestUpdate();
       });
 
       buttonNavigator.onPreviousRelease([this] {
         selectorIndex = ButtonNavigator::previousIndex(selectorIndex, entries.size());
-        updateRequired = true;
+        requestUpdate();
       });
 
       buttonNavigator.onNextContinuous([this] {
         selectorIndex = ButtonNavigator::nextPageIndex(selectorIndex, entries.size(), PAGE_ITEMS);
-        updateRequired = true;
+        requestUpdate();
       });
 
       buttonNavigator.onPreviousContinuous([this] {
         selectorIndex = ButtonNavigator::previousPageIndex(selectorIndex, entries.size(), PAGE_ITEMS);
-        updateRequired = true;
+        requestUpdate();
       });
     }
   }
