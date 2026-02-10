@@ -8,6 +8,7 @@ class ActivityWithSubactivity : public Activity {
   std::unique_ptr<Activity> subActivity = nullptr;
   void exitActivity();
   void enterNewActivity(Activity* activity);
+  [[noreturn]] virtual void renderTaskLoop();
 
  public:
   explicit ActivityWithSubactivity(std::string name, GfxRenderer& renderer, MappedInputManager& mappedInput)

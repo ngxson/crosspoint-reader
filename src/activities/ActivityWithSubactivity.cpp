@@ -1,5 +1,19 @@
 #include "ActivityWithSubactivity.h"
 
+void ActivityWithSubactivity::renderTaskLoop() {
+  while (true) {
+    ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    {
+      RenderLock lock(*this);
+      if (!subActivity) {
+        render(std::move(lock));
+      }
+      // If subActivity is set, consume the notification but skip parent render
+      // Note: the sub-activity will call its render() from its own display task
+    }
+  }
+}
+
 void ActivityWithSubactivity::exitActivity() {
   // No need to lock, since onExit() already acquires its own lock
   if (subActivity) {
@@ -23,13 +37,10 @@ void ActivityWithSubactivity::loop() {
 }
 
 void ActivityWithSubactivity::requestUpdate() {
-  if (subActivity) {
-    // Note: no need lock here. If we reach this branch, that mean enterNewActivity() must have been called, acquired
-    // the lock and make sure there is no pending render requests before passing the control to subActivity
-    subActivity->requestUpdate();
-  } else {
+  if (!subActivity) {
     Activity::requestUpdate();
   }
+  // Sub-activity should call their own requestUpdate() from their loop() function
 }
 
 void ActivityWithSubactivity::onExit() {
