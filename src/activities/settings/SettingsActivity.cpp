@@ -160,7 +160,6 @@ void SettingsActivity::toggleCurrentSetting() {
     }
   } else if (setting.type == SettingType::ACTION) {
     auto enterSubActivity = [this](Activity* activity) {
-      RenderLock lock(*this);
       exitActivity();
       enterNewActivity(activity);
     };
