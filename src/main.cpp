@@ -276,6 +276,37 @@ void setupDisplayAndFonts() {
   Serial.printf("[%lu] [   ] Fonts setup\n", millis());
 }
 
+// FOR TESTING ONLY
+static bool isLowerFreq = false;
+static int normalFreq = 160;  // MHz
+class HalPowerManager {
+ public:
+  static void setCpuFrequency(bool lower) {
+    bool changed = false;
+    if (lower && !isLowerFreq) {
+      bool success = setCpuFrequencyMhz(10);
+      if (!success) {
+        Serial.printf("[%lu] [PWR] Failed to set CPU frequency to 10 MHz\n", millis());
+        return;
+      }
+      isLowerFreq = true;
+      changed = true;
+    } else if (!lower && isLowerFreq) {
+      bool success = setCpuFrequencyMhz(normalFreq);
+      if (!success) {
+        Serial.printf("[%lu] [PWR] Failed to set CPU frequency to %d MHz\n", millis(), normalFreq);
+        return;
+      }
+      isLowerFreq = false;
+      changed = true;
+    }
+
+    if (changed) {
+      Serial.printf("[%lu] [PWR] CPU frequency set to %u MHz\n", millis(), getCpuFrequencyMhz());
+    }
+  }
+};
+
 void setup() {
   t1 = millis();
 
@@ -300,6 +331,8 @@ void setup() {
     enterNewActivity(new FullScreenMessageActivity(renderer, mappedInputManager, "SD card error", EpdFontFamily::BOLD));
     return;
   }
+
+  normalFreq = getCpuFrequencyMhz();
 
   SETTINGS.loadFromFile();
   KOREADER_STORE.loadFromFile();
@@ -371,6 +404,7 @@ void loop() {
   static unsigned long lastActivityTime = millis();
   if (gpio.wasAnyPressed() || gpio.wasAnyReleased() || (currentActivity && currentActivity->preventAutoSleep())) {
     lastActivityTime = millis();  // Reset inactivity timer
+    HalPowerManager::setCpuFrequency(false);  // Set normal CPU frequency on user activity
   }
 
   const unsigned long sleepTimeoutMs = SETTINGS.getSleepTimeoutMs();
@@ -411,6 +445,7 @@ void loop() {
     static constexpr unsigned long IDLE_POWER_SAVING_MS = 3000;  // 3 seconds
     if (millis() - lastActivityTime >= IDLE_POWER_SAVING_MS) {
       // If we've been inactive for a while, increase the delay to save power
+      HalPowerManager::setCpuFrequency(true);  // Lower CPU frequency after extended inactivity
       delay(50);
     } else {
       // Short delay to prevent tight loop while still being responsive
