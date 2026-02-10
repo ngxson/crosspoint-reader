@@ -408,7 +408,7 @@ void loop() {
   if (currentActivity && currentActivity->skipLoopDelay()) {
     yield();  // Give FreeRTOS a chance to run tasks, but return immediately
   } else {
-    static constexpr unsigned long IDLE_POWER_SAVING_MS = 3000; // 3 seconds
+    static constexpr unsigned long IDLE_POWER_SAVING_MS = 3000;  // 3 seconds
     if (millis() - lastActivityTime >= IDLE_POWER_SAVING_MS) {
       // If we've been inactive for a while, increase the delay to save power
       delay(50);
