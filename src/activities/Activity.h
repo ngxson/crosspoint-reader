@@ -4,6 +4,7 @@
 #include <freertos/semphr.h>
 #include <freertos/task.h>
 
+#include <cassert>
 #include <string>
 #include <utility>
 
