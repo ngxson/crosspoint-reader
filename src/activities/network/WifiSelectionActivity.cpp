@@ -202,8 +202,8 @@ void WifiSelectionActivity::selectNetwork(const int index) {
         },
         [this] {
           state = WifiSelectionState::NETWORK_LIST;
-          requestUpdate();
           exitActivity();
+          requestUpdate();
         }));
   } else {
     // Connect directly for open networks

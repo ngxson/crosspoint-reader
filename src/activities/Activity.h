@@ -16,10 +16,12 @@ class Activity {
   std::string name;
   GfxRenderer& renderer;
   MappedInputManager& mappedInput;
+
   // Task to render and display the activity
   TaskHandle_t renderTaskHandle = nullptr;
   [[noreturn]] static void renderTaskTrampoline(void* param);
   [[noreturn]] virtual void renderTaskLoop();
+
   // Mutex to protect rendering operations from being deleted mid-render
   SemaphoreHandle_t renderingMutex = nullptr;
 
@@ -36,9 +38,11 @@ class Activity {
   virtual void onEnter();
   virtual void onExit();
   virtual void loop() {}
+
   virtual void render(RenderLock&&) {}
   virtual void requestUpdate();
   virtual void requestUpdateAndWait();
+
   virtual bool skipLoopDelay() { return false; }
   virtual bool preventAutoSleep() { return false; }
   virtual bool isReaderActivity() const { return false; }
