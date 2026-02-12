@@ -599,7 +599,9 @@ void EpubReaderActivity::render(Activity::RenderLock&& lock) {
       Serial.printf("[%lu] [ERS] Failed to load page from SD - clearing section cache\n", millis());
       section->clearCache();
       section.reset();
-      return render(std::move(lock));
+      requestUpdate();  // Try again after clearing cache
+      // TODO: prevent infinite loop if the page keeps failing to load for some reason
+      return;
     }
     const auto start = millis();
     renderContents(std::move(p), orientedMarginTop, orientedMarginRight, orientedMarginBottom, orientedMarginLeft);
