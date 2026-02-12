@@ -1,6 +1,7 @@
+#include "HalPowerManager.h"
+
 #include <esp_sleep.h>
 
-#include "HalPowerManager.h"
 #include "HalGPIO.h"
 
 void HalPowerManager::begin() {
@@ -10,7 +11,7 @@ void HalPowerManager::begin() {
 
 void HalPowerManager::setPowerSaving(bool enabled) {
   if (normalFreq <= 0) {
-    return; // invalid state
+    return;  // invalid state
   }
   if (enabled && !isLowPower) {
     Serial.printf("[%lu] [PWR] Going to low-power mode\n", millis());
@@ -29,7 +30,7 @@ void HalPowerManager::setPowerSaving(bool enabled) {
   isLowPower = enabled;
 }
 
-void HalPowerManager::startDeepSleep(HalGPIO &gpio) const {
+void HalPowerManager::startDeepSleep(HalGPIO& gpio) const {
   // Ensure that the power button has been released to avoid immediately turning back on if you're holding it
   while (gpio.isPressed(HalGPIO::BTN_POWER)) {
     delay(50);
