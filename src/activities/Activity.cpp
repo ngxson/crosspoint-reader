@@ -28,8 +28,10 @@ void Activity::onEnter() {
 
 void Activity::onExit() {
   RenderLock lock(*this);  // Ensure we don't delete the task while it's rendering
-  vTaskDelete(renderTaskHandle);
-  renderTaskHandle = nullptr;
+  if (renderTaskHandle) {
+    vTaskDelete(renderTaskHandle);
+    renderTaskHandle = nullptr;
+  }
 
   Serial.printf("[%lu] [ACT] Exiting activity: %s\n", millis(), name.c_str());
 }

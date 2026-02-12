@@ -25,7 +25,6 @@ class EpubReaderPercentSelectionActivity final : public ActivityWithSubactivity 
  private:
   // Current percent value (0-100) shown on the slider.
   int percent = 0;
-  // Render dirty flag for the task loop.
 
   ButtonNavigator buttonNavigator;
 
