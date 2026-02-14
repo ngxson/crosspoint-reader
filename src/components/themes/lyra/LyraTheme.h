@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <functional>
+
 #include "components/themes/BaseTheme.h"
 
 class GfxRenderer;
