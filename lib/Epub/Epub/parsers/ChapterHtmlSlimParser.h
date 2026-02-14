@@ -1,6 +1,6 @@
 #pragma once
 
-#include <expat.h>
+#include <CrossPointExpat.h>
 
 #include <climits>
 #include <functional>
@@ -10,6 +10,8 @@
 #include "../blocks/TextBlock.h"
 #include "../css/CssParser.h"
 #include "../css/CssStyle.h"
+
+using namespace Expat;
 
 class Page;
 class GfxRenderer;

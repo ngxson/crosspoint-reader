@@ -1,9 +1,11 @@
 #pragma once
 #include <Print.h>
-#include <expat.h>
+#include <CrossPointExpat.h>
 
 #include <string>
 #include <vector>
+
+using namespace Expat;
 
 /**
  * Type of OPDS entry.

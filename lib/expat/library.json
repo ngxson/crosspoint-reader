@@ -3,7 +3,7 @@
   "version": "2.7.3",
   "build": {
     "srcFilter": [
-      "+<xmlparse.c>",
+      "+<CrossPointExpat.cpp>",
       "+<xmlrole.c>",
       "+<xmltok.c>"
     ]

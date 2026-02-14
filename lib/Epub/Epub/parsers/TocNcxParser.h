@@ -1,8 +1,10 @@
 #pragma once
 #include <Print.h>
-#include <expat.h>
+#include <CrossPointExpat.h>
 
 #include <string>
+
+using namespace Expat;
 
 class BookMetadataCache;
 

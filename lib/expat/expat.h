@@ -50,7 +50,7 @@
 #include "expat_external.h"
 
 #ifdef __cplusplus
-extern "C" {
+// extern "C" {
 #endif
 
 struct XML_ParserStruct;
@@ -1025,7 +1025,7 @@ XML_SetReparseDeferralEnabled(XML_Parser parser, XML_Bool enabled);
 #define XML_MICRO_VERSION 3
 
 #ifdef __cplusplus
-}
+// }
 #endif
 
 #endif /* not Expat_INCLUDED */
