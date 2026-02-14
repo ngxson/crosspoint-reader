@@ -4,6 +4,9 @@
 #include <Logging.h>
 #include <MD5Builder.h>
 
+// Required for ODR-use (e.g. std::min) in C++ standards prior to C++17
+constexpr size_t KOReaderDocumentId::CHUNK_SIZE;
+
 namespace {
 // Extract filename from path (everything after last '/')
 std::string getFilename(const std::string& path) {
