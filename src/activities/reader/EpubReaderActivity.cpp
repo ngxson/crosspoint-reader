@@ -515,8 +515,10 @@ void EpubReaderActivity::displayTaskLoop() {
     if (updateRequired) {
       updateRequired = false;
       xSemaphoreTake(renderingMutex, portMAX_DELAY);
-      HalPowerManager::Lock powerLock;
-      renderScreen();
+      {
+        HalPowerManager::Lock powerLock;
+        renderScreen();
+      }
       xSemaphoreGive(renderingMutex);
     }
     vTaskDelay(10 / portTICK_PERIOD_MS);
