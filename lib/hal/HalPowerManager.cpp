@@ -68,3 +68,24 @@ int HalPowerManager::getBatteryPercentage() const {
   static const BatteryMonitor battery = BatteryMonitor(BAT_GPIO0);
   return battery.readPercentage();
 }
+
+HalPowerManager::Lock::Lock() {
+  xSemaphoreTake(powerManager.modeMutex, portMAX_DELAY);
+  // Current limitation: only one lock at a time
+  if (powerManager.currentLockMode != None) {
+    LOG_ERR("PWR", "Lock already held, ignore");
+    valid = false;
+  } else {
+    powerManager.currentLockMode = NormalSpeed;
+    valid = true;
+  }
+  xSemaphoreGive(powerManager.modeMutex);
+}
+
+HalPowerManager::Lock::~Lock() {
+  xSemaphoreTake(powerManager.modeMutex, portMAX_DELAY);
+  if (valid) {
+    powerManager.currentLockMode = None;
+  }
+  xSemaphoreGive(powerManager.modeMutex);
+}

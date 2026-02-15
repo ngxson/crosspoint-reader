@@ -16,7 +16,6 @@ class HalPowerManager {
   int normalFreq = 0;  // MHz
   bool isLowPower = false;
 
-  // TODO: add FastSpeed (240MHz) mode in the future
   enum LockMode { None, NormalSpeed };
   LockMode currentLockMode = None;
   SemaphoreHandle_t modeMutex = nullptr;  // Protect access to currentLockMode
@@ -45,7 +44,7 @@ class HalPowerManager {
     bool valid = false;
 
    public:
-    explicit Lock(LockMode mode = NormalSpeed);
+    explicit Lock();
     ~Lock();
   };
 };
