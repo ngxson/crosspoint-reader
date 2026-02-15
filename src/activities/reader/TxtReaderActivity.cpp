@@ -3,6 +3,7 @@
 #include <GfxRenderer.h>
 #include <HalStorage.h>
 #include <Serialization.h>
+#include <HalPowerManager.h>
 #include <Utf8.h>
 
 #include "CrossPointSettings.h"
@@ -146,6 +147,7 @@ void TxtReaderActivity::displayTaskLoop() {
     if (updateRequired) {
       updateRequired = false;
       xSemaphoreTake(renderingMutex, portMAX_DELAY);
+      HalPowerManager::Lock powerLock;
       renderScreen();
       xSemaphoreGive(renderingMutex);
     }

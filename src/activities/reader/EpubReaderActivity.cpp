@@ -4,6 +4,7 @@
 #include <FsHelpers.h>
 #include <GfxRenderer.h>
 #include <HalStorage.h>
+#include <HalPowerManager.h>
 #include <Logging.h>
 
 #include "CrossPointSettings.h"
@@ -514,6 +515,7 @@ void EpubReaderActivity::displayTaskLoop() {
     if (updateRequired) {
       updateRequired = false;
       xSemaphoreTake(renderingMutex, portMAX_DELAY);
+      HalPowerManager::Lock powerLock;
       renderScreen();
       xSemaphoreGive(renderingMutex);
     }

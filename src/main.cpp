@@ -33,7 +33,6 @@
 
 HalDisplay display;
 HalGPIO gpio;
-HalPowerManager powerManager;
 MappedInputManager mappedInputManager(gpio);
 GfxRenderer renderer(display);
 Activity* currentActivity;

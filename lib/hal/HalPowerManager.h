@@ -3,12 +3,19 @@
 #include <Arduino.h>
 #include <BatteryMonitor.h>
 #include <InputManager.h>
+#include <freertos/semphr.h>
+#include <cassert>
 
 #include "HalGPIO.h"
 
 class HalPowerManager {
   int normalFreq = 0;  // MHz
   bool isLowPower = false;
+
+  // TODO: add FastSpeed (240MHz) mode in the future
+  enum LockMode { None, NormalSpeed };
+  LockMode currentLockMode = None;
+  SemaphoreHandle_t modeMutex = nullptr;  // Protect access to currentLockMode
 
  public:
   static constexpr int LOW_POWER_FREQ = 10;                    // MHz
@@ -20,8 +27,29 @@ class HalPowerManager {
   void setPowerSaving(bool enabled);
 
   // Setup wake up GPIO and enter deep sleep
+  // Should be called inside main loop() to handle the currentLockMode
   void startDeepSleep(HalGPIO& gpio) const;
 
   // Get battery percentage (range 0-100)
   int getBatteryPercentage() const;
+
+  // RAII helper class to manage power saving locks
+  // Usage: create an instance of Lock in a scope to disable power saving, for example when running a task that needs full performance. When the Lock instance is destroyed (goes out of scope), power saving will be re-enabled.
+  class Lock {
+    friend class HalPowerManager;
+   public:
+    Lock(LockMode mode = NormalSpeed) {
+      xSemaphoreTake(powerManager.modeMutex, portMAX_DELAY);
+      assert(powerManager.currentLockMode == None);  // Current limitation: only one lock at a time
+      powerManager.currentLockMode = mode;
+      xSemaphoreGive(powerManager.modeMutex);
+    }
+    ~Lock() {
+      xSemaphoreTake(powerManager.modeMutex, portMAX_DELAY);
+      powerManager.currentLockMode = None;
+      xSemaphoreGive(powerManager.modeMutex);
+    }
+  };
 };
+
+extern HalPowerManager powerManager; // Singleton
