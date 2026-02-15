@@ -4,9 +4,11 @@
 #include <esp_sleep.h>
 #include <cassert>
 
+#include <cassert>
+
 #include "HalGPIO.h"
 
-HalPowerManager powerManager; // Singleton instance
+HalPowerManager powerManager;  // Singleton instance
 
 void HalPowerManager::begin() {
   pinMode(BAT_GPIO0, INPUT);
@@ -30,6 +32,7 @@ void HalPowerManager::setPowerSaving(bool enabled) {
       LOG_DBG("PWR", "Failed to set CPU frequency = %d MHz", LOW_POWER_FREQ);
       return;
     }
+    isLowPower = true;
 
   } else if ((!enabled || mode != None) && isLowPower) {
     LOG_DBG("PWR", "Restoring normal CPU frequency");
@@ -37,9 +40,10 @@ void HalPowerManager::setPowerSaving(bool enabled) {
       LOG_DBG("PWR", "Failed to set CPU frequency = %d MHz", normalFreq);
       return;
     }
+    isLowPower = false;
   }
 
-  isLowPower = enabled;
+  // Otherwise, no change needed
 }
 
 void HalPowerManager::startDeepSleep(HalGPIO& gpio) const {

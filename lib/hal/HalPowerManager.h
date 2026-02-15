@@ -8,6 +8,9 @@
 
 #include "HalGPIO.h"
 
+class HalPowerManager;
+extern HalPowerManager powerManager;  // Singleton
+
 class HalPowerManager {
   int normalFreq = 0;  // MHz
   bool isLowPower = false;
@@ -34,9 +37,11 @@ class HalPowerManager {
   int getBatteryPercentage() const;
 
   // RAII helper class to manage power saving locks
-  // Usage: create an instance of Lock in a scope to disable power saving, for example when running a task that needs full performance. When the Lock instance is destroyed (goes out of scope), power saving will be re-enabled.
+  // Usage: create an instance of Lock in a scope to disable power saving, for example when running a task that needs
+  // full performance. When the Lock instance is destroyed (goes out of scope), power saving will be re-enabled.
   class Lock {
     friend class HalPowerManager;
+
    public:
     Lock(LockMode mode = NormalSpeed) {
       xSemaphoreTake(powerManager.modeMutex, portMAX_DELAY);

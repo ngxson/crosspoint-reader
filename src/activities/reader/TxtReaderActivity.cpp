@@ -1,6 +1,7 @@
 #include "TxtReaderActivity.h"
 
 #include <GfxRenderer.h>
+#include <HalPowerManager.h>
 #include <HalStorage.h>
 #include <Serialization.h>
 #include <HalPowerManager.h>
