@@ -11,7 +11,6 @@
 #include <GfxRenderer.h>
 #include <HalPowerManager.h>
 #include <HalStorage.h>
-#include <HalPowerManager.h>
 
 #include "CrossPointSettings.h"
 #include "CrossPointState.h"
@@ -165,6 +164,7 @@ void XtcReaderActivity::displayTaskLoop() {
     if (updateRequired) {
       updateRequired = false;
       xSemaphoreTake(renderingMutex, portMAX_DELAY);
+      HalPowerManager::Lock powerLock;
       renderScreen();
       xSemaphoreGive(renderingMutex);
     }

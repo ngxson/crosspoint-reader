@@ -5,7 +5,6 @@
 #include <GfxRenderer.h>
 #include <HalPowerManager.h>
 #include <HalStorage.h>
-#include <HalPowerManager.h>
 #include <Logging.h>
 
 #include "CrossPointSettings.h"

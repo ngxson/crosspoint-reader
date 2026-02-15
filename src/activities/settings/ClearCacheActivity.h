@@ -17,6 +17,7 @@ class ClearCacheActivity final : public ActivityWithSubactivity {
   void onEnter() override;
   void onExit() override;
   void loop() override;
+  bool skipLoopDelay() override { return true; }  // Prevent power-saving mode
 
  private:
   enum State { WARNING, CLEARING, SUCCESS, FAILED };

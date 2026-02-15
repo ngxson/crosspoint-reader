@@ -3,6 +3,7 @@
 #include <Bitmap.h>
 #include <Epub.h>
 #include <GfxRenderer.h>
+#include <HalPowerManager.h>
 #include <HalStorage.h>
 #include <Utf8.h>
 #include <Xtc.h>
@@ -239,6 +240,7 @@ void HomeActivity::displayTaskLoop() {
     if (updateRequired) {
       updateRequired = false;
       xSemaphoreTake(renderingMutex, portMAX_DELAY);
+      HalPowerManager::Lock powerLock;
       render();
       xSemaphoreGive(renderingMutex);
     }

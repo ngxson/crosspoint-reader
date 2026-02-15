@@ -4,7 +4,6 @@
 #include <HalPowerManager.h>
 #include <HalStorage.h>
 #include <Serialization.h>
-#include <HalPowerManager.h>
 #include <Utf8.h>
 
 #include "CrossPointSettings.h"
