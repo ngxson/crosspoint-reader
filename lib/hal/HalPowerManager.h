@@ -46,6 +46,12 @@ class HalPowerManager {
    public:
     explicit Lock();
     ~Lock();
+
+    // Non-copyable and non-movable
+    Lock(const Lock&) = delete;
+    Lock& operator=(const Lock&) = delete;
+    Lock(Lock&&) = delete;
+    Lock& operator=(Lock&&) = delete;
   };
 };
 

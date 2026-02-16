@@ -29,7 +29,7 @@ void HalPowerManager::setPowerSaving(bool enabled) {
   }
 
   // Note: We don't use mutex here to avoid too much overhead,
-  // it's not very important if we read a slightly stale value for currentLockMod
+  // it's not very important if we read a slightly stale value for currentLockMode
   const LockMode mode = currentLockMode;
 
   if (mode == None && enabled && !isLowPower) {
@@ -80,6 +80,10 @@ HalPowerManager::Lock::Lock() {
     valid = true;
   }
   xSemaphoreGive(powerManager.modeMutex);
+  if (valid) {
+    // Immediately restore normal CPU frequency if currently in low-power mode
+    powerManager.setPowerSaving(false);
+  }
 }
 
 HalPowerManager::Lock::~Lock() {
