@@ -1,6 +1,27 @@
 #include "EpdFontFamily.h"
 #include <cassert>
 #include <cstring>
+#include <Arduino.h>
+
+// note: this is a hack, just for demo
+struct Assets {
+  size_t baseOffset = 0;
+  uint8_t buffer[1024];
+  void begin() {
+    if (baseOffset == 0) {
+      baseOffset = ESP.getSketchSize() + 0x10000;
+    }
+  }
+  uint8_t* read(size_t offset, size_t length) {
+    begin();
+    assert(length <= sizeof(buffer));
+    // maybe using mmap in the future; for now, this is enough for a demo
+    ESP.flashRead(baseOffset + offset, (uint32_t*)buffer, length);
+    return buffer;
+  }
+};
+
+static Assets ASSETS;
 
 const EpdFont* EpdFontFamily::getFont(const Style style) const {
   // Extract font style bits (ignore UNDERLINE bit for font selection)
@@ -34,8 +55,7 @@ const uint8_t* EpdFontFamily::getBitmap(const EpdGlyph* glyph, Style style) cons
   const uint32_t offset = glyph->dataOffset;
   const auto* data = getData(style);
   if (data->assetsOffset) {
-    // TODO
-    return &data->bitmap[offset];
+    return ASSETS.read(data->assetsOffset + offset, glyph->dataLength);
   } else {
     return &data->bitmap[offset];
   }

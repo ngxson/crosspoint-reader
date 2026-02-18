@@ -38,6 +38,11 @@ intervals = [
     ### Latin Extended-A ###
     # Eastern European and Baltic languages
     (0x0100, 0x017F),
+    ### Latin Extended-B ###
+    # Latin letters for Eastern European langauges and African languages
+    (0x0180, 0x024F),
+    ### Latin Extended-Additional ###
+    (0x1E00, 0x1EFF),
     ### General Punctuation (core subset) ###
     # Smart quotes, en dash, em dash, ellipsis, NO-BREAK SPACE
     (0x2000, 0x206F),
@@ -66,7 +71,7 @@ intervals = [
     (0x2190, 0x21FF),
     ### CJK ###
     # Core Unified Ideographs
-    # (0x4E00, 0x9FFF),
+    (0x4E00, 0x9FFF),
     # # Extension A
     # (0x3400, 0x4DBF),
     # # Extension B
@@ -75,10 +80,10 @@ intervals = [
     # (0x2A700, 0x2EBEF),
     # # Extension G
     # (0x30000, 0x3134F),
-    # # Hiragana
-    # (0x3040, 0x309F),
-    # # Katakana
-    # (0x30A0, 0x30FF),
+    # Hiragana
+    (0x3040, 0x309F),
+    # Katakana
+    (0x30A0, 0x30FF),
     # # Katakana Phonetic Extensions
     # (0x31F0, 0x31FF),
     # # Halfwidth Katakana
