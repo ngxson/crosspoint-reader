@@ -15,6 +15,7 @@ parser.add_argument("name", action="store", help="name of the font.")
 parser.add_argument("size", type=int, help="font size to use.")
 parser.add_argument("fontstack", action="store", nargs='+', help="list of font files, ordered by descending priority.")
 parser.add_argument("--2bit", dest="is2Bit", action="store_true", help="generate 2-bit greyscale bitmap instead of 1-bit black and white.")
+parser.add_argument("--no-default-intervals", dest="no_default_intervals", action="store_true", help="skip default intervals")
 parser.add_argument("--additional-intervals", dest="additional_intervals", action="append", help="Additional code point intervals to export as min,max. This argument can be repeated.")
 parser.add_argument("--assets-path", type=Path, help="instead of generating bitmap as header, append it to a binary file")
 args = parser.parse_args()
@@ -71,7 +72,7 @@ intervals = [
     (0x2190, 0x21FF),
     ### CJK ###
     # Core Unified Ideographs
-    (0x4E00, 0x9FFF),
+    # (0x4E00, 0x9FFF),
     # # Extension A
     # (0x3400, 0x4DBF),
     # # Extension B
@@ -80,10 +81,10 @@ intervals = [
     # (0x2A700, 0x2EBEF),
     # # Extension G
     # (0x30000, 0x3134F),
-    # Hiragana
-    (0x3040, 0x309F),
-    # Katakana
-    (0x30A0, 0x30FF),
+    # # Hiragana
+    # (0x3040, 0x309F),
+    # # Katakana
+    # (0x30A0, 0x30FF),
     # # Katakana Phonetic Extensions
     # (0x31F0, 0x31FF),
     # # Halfwidth Katakana
@@ -111,7 +112,7 @@ intervals = [
     ### Specials
     # Replacement Character
     (0xFFFD, 0xFFFD),
-]
+] if not args.no_default_intervals else []
 
 add_ints = []
 if args.additional_intervals:

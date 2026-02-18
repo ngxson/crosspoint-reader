@@ -43,6 +43,35 @@ for size in ${OPENDYSLEXIC_FONT_SIZES[@]}; do
   done
 done
 
+# CJK Fonts
+READER_FONT_STYLES=("Regular" "Bold")
+FONT_ARGS="--no-default-intervals"
+FONT_ARGS="$FONT_ARGS --additional-intervals 0x4E00,0x9FFF" # Core Unified Ideographs
+FONT_ARGS="$FONT_ARGS --additional-intervals 0x3040,0x309F" # Hiragana
+FONT_ARGS="$FONT_ARGS --additional-intervals 0x30A0,0x30FF" # Katakana
+
+NOTOSERIFSC_FONT_SIZES=(12)
+
+# for size in ${NOTOSANS_FONT_SIZES[@]}; do
+#   for style in ${READER_FONT_STYLES[@]}; do
+#     font_name="notosanssc_${size}_$(echo $style | tr '[:upper:]' '[:lower:]')"
+#     font_path="../builtinFonts/source/NotoSansSC/NotoSansSC-${style}.ttf"
+#     output_path="../builtinFonts/${font_name}.h"
+#     python fontconvert.py $font_name $size $font_path --2bit $FONT_ARGS --assets-path $ASSETS_PATH > $output_path
+#     echo "Generated $output_path"
+#   done
+# done
+
+for size in ${NOTOSERIFSC_FONT_SIZES[@]}; do
+  for style in ${READER_FONT_STYLES[@]}; do
+    font_name="notoserifsc_${size}_$(echo $style | tr '[:upper:]' '[:lower:]')"
+    font_path="../builtinFonts/source/NotoSerifSC/NotoSerifSC-${style}.ttf"
+    output_path="../builtinFonts/${font_name}.h"
+    python fontconvert.py $font_name $size $font_path --2bit $FONT_ARGS --assets-path $ASSETS_PATH > $output_path
+    echo "Generated $output_path"
+  done
+done
+
 UI_FONT_SIZES=(10 12)
 UI_FONT_STYLES=("Regular" "Bold")
 
