@@ -1,5 +1,7 @@
 #pragma once
 
+#define FONT_BITMAPS_ATTR
+#define FONT_IS_4_BITS_ALIGNED false
 #include <builtinFonts/bookerly_12_bold.h>
 #include <builtinFonts/bookerly_12_bolditalic.h>
 #include <builtinFonts/bookerly_12_italic.h>
@@ -33,6 +35,15 @@
 #include <builtinFonts/notosans_18_bolditalic.h>
 #include <builtinFonts/notosans_18_italic.h>
 #include <builtinFonts/notosans_18_regular.h>
+#include <builtinFonts/ubuntu_10_bold.h>
+#include <builtinFonts/ubuntu_10_regular.h>
+#include <builtinFonts/ubuntu_12_bold.h>
+#include <builtinFonts/ubuntu_12_regular.h>
+#undef FONT_BITMAPS_ATTR
+#undef FONT_IS_4_BITS_ALIGNED
+
+#define FONT_BITMAPS_ATTR __attribute__((section(".flash.text"), aligned(4)))
+#define FONT_IS_4_BITS_ALIGNED true
 #include <builtinFonts/opendyslexic_10_bold.h>
 #include <builtinFonts/opendyslexic_10_bolditalic.h>
 #include <builtinFonts/opendyslexic_10_italic.h>
@@ -49,7 +60,5 @@
 #include <builtinFonts/opendyslexic_8_bolditalic.h>
 #include <builtinFonts/opendyslexic_8_italic.h>
 #include <builtinFonts/opendyslexic_8_regular.h>
-#include <builtinFonts/ubuntu_10_bold.h>
-#include <builtinFonts/ubuntu_10_regular.h>
-#include <builtinFonts/ubuntu_12_bold.h>
-#include <builtinFonts/ubuntu_12_regular.h>
+#undef FONT_BITMAPS_ATTR
+#undef FONT_IS_4_BITS_ALIGNED

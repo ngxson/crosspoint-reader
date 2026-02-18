@@ -1,4 +1,6 @@
 #include "EpdFontFamily.h"
+#include <cassert>
+#include <cstring>
 
 const EpdFont* EpdFontFamily::getFont(const Style style) const {
   // Extract font style bits (ignore UNDERLINE bit for font selection)
@@ -27,6 +29,17 @@ bool EpdFontFamily::hasPrintableChars(const char* string, const Style style) con
 }
 
 const EpdFontData* EpdFontFamily::getData(const Style style) const { return getFont(style)->data; }
+
+const uint8_t* EpdFontFamily::getBitmap(const EpdGlyph* glyph, Style style) const {
+  const uint32_t offset = glyph->dataOffset;
+  const auto* data = getData(style);
+  if (data->assetsOffset) {
+    // TODO
+    return &data->bitmap[offset];
+  } else {
+    return &data->bitmap[offset];
+  }
+}
 
 const EpdGlyph* EpdFontFamily::getGlyph(const uint32_t cp, const Style style) const {
   return getFont(style)->getGlyph(cp);

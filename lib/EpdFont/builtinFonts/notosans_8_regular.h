@@ -1618,5 +1618,6 @@ static const EpdFontData notosans_8_regular = {
     23,
     18,
     -5,
+    0,
     false,
 };

@@ -792,13 +792,12 @@ void GfxRenderer::drawTextRotated90CW(const int fontId, const int x, const int y
     }
 
     const int is2Bit = font.getData(style)->is2Bit;
-    const uint32_t offset = glyph->dataOffset;
     const uint8_t width = glyph->width;
     const uint8_t height = glyph->height;
     const int left = glyph->left;
     const int top = glyph->top;
 
-    const uint8_t* bitmap = &font.getData(style)->bitmap[offset];
+    const uint8_t* bitmap = font.getBitmap(glyph, style);
 
     if (bitmap != nullptr) {
       for (int glyphY = 0; glyphY < height; glyphY++) {
@@ -957,13 +956,11 @@ void GfxRenderer::renderChar(const EpdFontFamily& fontFamily, const uint32_t cp,
   }
 
   const int is2Bit = fontFamily.getData(style)->is2Bit;
-  const uint32_t offset = glyph->dataOffset;
   const uint8_t width = glyph->width;
   const uint8_t height = glyph->height;
   const int left = glyph->left;
 
-  const uint8_t* bitmap = nullptr;
-  bitmap = &fontFamily.getData(style)->bitmap[offset];
+  const uint8_t* bitmap = fontFamily.getBitmap(glyph, style);
 
   if (bitmap != nullptr) {
     for (int glyphY = 0; glyphY < height; glyphY++) {

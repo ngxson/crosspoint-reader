@@ -1435,5 +1435,6 @@ static const EpdFontData ubuntu_10_regular = {
     24,
     20,
     -4,
+    0,
     false,
 };

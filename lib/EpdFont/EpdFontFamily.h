@@ -13,6 +13,7 @@ class EpdFontFamily {
   bool hasPrintableChars(const char* string, Style style = REGULAR) const;
   const EpdFontData* getData(Style style = REGULAR) const;
   const EpdGlyph* getGlyph(uint32_t cp, Style style = REGULAR) const;
+  const uint8_t* getBitmap(const EpdGlyph* glyph, Style style = REGULAR) const;
 
  private:
   const EpdFont* regular;
