@@ -2,18 +2,11 @@
 
 #include <HalPowerManager.h>
 
-void ActivityWithSubactivity::renderTaskLoop() {
-  while (true) {
-    ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-    {
-      HalPowerManager::Lock powerLock;  // Ensure we don't go into low-power mode while rendering
-      RenderLock lock(*this);
-      if (!subActivity) {
-        render(std::move(lock));
-      }
-      // If subActivity is set, consume the notification but skip parent render
-      // Note: the sub-activity will call its render() from its own display task
-    }
+void ActivityWithSubactivity::renderImpl(RenderLock&& lock) {
+  if (subActivity) {
+    subActivity->renderImpl(std::move(lock));
+  } else {
+    render(std::move(lock));
   }
 }
 
@@ -28,12 +21,14 @@ void ActivityWithSubactivity::exitActivity() {
 
 void ActivityWithSubactivity::enterNewActivity(Activity* activity) {
   // Acquire lock to avoid 2 activities rendering at the same time during transition
-  RenderLock lock(*this);
+  // RenderLock lock(*this); // TODO: what to do?
   subActivity.reset(activity);
   subActivity->onEnter();
+  LOG_DBG("ACT", "Entering subactivity...");
 }
 
 void ActivityWithSubactivity::loop() {
+  // TODO: this logic should already be handled by activity.loop() function, it should be removed
   if (subActivity) {
     subActivity->loop();
   }

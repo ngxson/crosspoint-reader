@@ -19,24 +19,12 @@ class Activity {
   GfxRenderer& renderer;
   MappedInputManager& mappedInput;
 
-  // Task to render and display the activity
-  TaskHandle_t renderTaskHandle = nullptr;
-  [[noreturn]] static void renderTaskTrampoline(void* param);
-  [[noreturn]] virtual void renderTaskLoop();
-
-  // Mutex to protect rendering operations from being deleted mid-render
-  SemaphoreHandle_t renderingMutex = nullptr;
-
  public:
+  using RenderLock = ActivityManager::RenderLock;
+
   explicit Activity(std::string name, GfxRenderer& renderer, MappedInputManager& mappedInput)
-      : name(std::move(name)), renderer(renderer), mappedInput(mappedInput), renderingMutex(xSemaphoreCreateMutex()) {
-    assert(renderingMutex != nullptr && "Failed to create rendering mutex");
-  }
-  virtual ~Activity() {
-    vSemaphoreDelete(renderingMutex);
-    renderingMutex = nullptr;
-  };
-  class RenderLock;
+      : name(std::move(name)), renderer(renderer), mappedInput(mappedInput) {}
+  virtual ~Activity() = default;
   virtual void onEnter();
   virtual void onExit();
   virtual void loop() {}
@@ -49,19 +37,11 @@ class Activity {
   virtual bool preventAutoSleep() { return false; }
   virtual bool isReaderActivity() const { return false; }
 
+  // temporary before refactoring ActivityWithSubactivity
+  virtual void renderImpl(RenderLock&& lock) { render(std::move(lock)); }
+
   // Convenience method to facilitate API transition to ActivityManager
   // TODO: remove this in near future
   void onGoHome();
   void onSelectBook(const std::string& path);
-
-  // RAII helper to lock rendering mutex for the duration of a scope.
-  class RenderLock {
-    Activity& activity;
-
-   public:
-    explicit RenderLock(Activity& activity);
-    RenderLock(const RenderLock&) = delete;
-    RenderLock& operator=(const RenderLock&) = delete;
-    ~RenderLock();
-  };
 };

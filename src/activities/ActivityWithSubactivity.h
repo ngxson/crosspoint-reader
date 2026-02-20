@@ -8,7 +8,6 @@ class ActivityWithSubactivity : public Activity {
   std::unique_ptr<Activity> subActivity = nullptr;
   void exitActivity();
   void enterNewActivity(Activity* activity);
-  [[noreturn]] void renderTaskLoop() override;
 
  public:
   explicit ActivityWithSubactivity(std::string name, GfxRenderer& renderer, MappedInputManager& mappedInput)
@@ -18,4 +17,6 @@ class ActivityWithSubactivity : public Activity {
   // the subactivity should request its own renders. This pauses parent rendering until exit.
   void requestUpdate() override;
   void onExit() override;
+
+  void renderImpl(RenderLock&& lock) override;
 };
