@@ -237,11 +237,7 @@ void CrossPointWebServerActivity::startWebServer() {
 
     // Force an immediate render since we're transitioning from a subactivity
     // that had its own rendering task. We need to make sure our display is shown.
-    {
-      RenderLock lock(*this);
-      render(std::move(lock));
-    }
-    LOG_DBG("WEBACT", "Rendered File Transfer screen");
+    requestUpdate();
   } else {
     LOG_ERR("WEBACT", "ERROR: Failed to start web server!");
     webServer.reset();

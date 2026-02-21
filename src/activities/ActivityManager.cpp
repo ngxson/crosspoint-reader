@@ -47,20 +47,27 @@ void ActivityManager::loop() {
 
   if (pendingAction == Pop) {
     RenderLock lock;
+    pendingAction = None;
     if (stackActivities.empty()) {
+      LOG_DBG("ACT", "No more activities on stack, going home");
       goHome();
+      return;
     } else {
       // Destroy the current activity
-      exitActivity();
+      exitActivity(lock);
       currentActivity = stackActivities.back();
       stackActivities.pop_back();
+      LOG_DBG("ACT", "Popped from activity stack, size = %d", stackActivities.size());
       // Handle result if necessary
       if (currentActivity->resultHandler) {
         // Move the result handler out of the activity before calling it, to avoid potential issues if the handler tries
         // to launch a new activity
+        LOG_DBG("ACT", "Handling result for popped activity");
         auto handler = std::move(currentActivity->resultHandler);
         currentActivity->resultHandler = nullptr;
+        lock.unlock();  // Handler may acquire its own lock
         handler(pendingResult);
+        return;
       }
     }
 
@@ -70,8 +77,9 @@ void ActivityManager::loop() {
 
     if (pendingAction == Replace) {
       // Destroy the current activity
-      exitActivity();
+      exitActivity(lock);
       // Clear the stack
+      LOG_DBG("ACT", "Clearing activity stack");
       while (!stackActivities.empty()) {
         stackActivities.back()->onExit();
         delete stackActivities.back();
@@ -80,14 +88,17 @@ void ActivityManager::loop() {
     } else if (pendingAction == Push) {
       // Move current activity to stack
       stackActivities.push_back(currentActivity);
+      LOG_DBG("ACT", "Pushed to activity stack, size = %d", stackActivities.size());
     }
     currentActivity = pendingActivity;
     pendingActivity = nullptr;
+
+    lock.unlock();  // onEnter may acquire its own lock
     currentActivity->onEnter();
   }
 }
 
-void ActivityManager::exitActivity() {
+void ActivityManager::exitActivity(RenderLock& lock) {
   // Note: lock must be held by the caller
   if (currentActivity) {
     currentActivity->onExit();
@@ -145,7 +156,7 @@ void ActivityManager::pushActivity(Activity* activity) {
 }
 
 void ActivityManager::pushActivityForResult(Activity* activity, std::function<void(ActivityResult&)> resultHandler) {
-  activity->resultHandler = std::move(resultHandler);
+  currentActivity->resultHandler = std::move(resultHandler);
   pushActivity(activity);
 }
 
@@ -180,8 +191,26 @@ void ActivityManager::requestUpdate() {
 
 // RenderLock
 
-RenderLock::RenderLock() { xSemaphoreTake(activityManager.renderingMutex, portMAX_DELAY); }
+RenderLock::RenderLock() {
+  xSemaphoreTake(activityManager.renderingMutex, portMAX_DELAY);
+  isLocked = true;
+}
 
-RenderLock::RenderLock(Activity& /* unused */) { xSemaphoreTake(activityManager.renderingMutex, portMAX_DELAY); }
+RenderLock::RenderLock(Activity& /* unused */) {
+  xSemaphoreTake(activityManager.renderingMutex, portMAX_DELAY);
+  isLocked = true;
+}
 
-RenderLock::~RenderLock() { xSemaphoreGive(activityManager.renderingMutex); }
+RenderLock::~RenderLock() {
+  if (isLocked) {
+    xSemaphoreGive(activityManager.renderingMutex);
+    isLocked = false;
+  }
+}
+
+void RenderLock::unlock() {
+  if (isLocked) {
+    xSemaphoreGive(activityManager.renderingMutex);
+    isLocked = false;
+  }
+}

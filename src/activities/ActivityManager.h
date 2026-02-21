@@ -59,7 +59,8 @@ struct ActivityResult {
   int selectedPercent = 0;
 };
 
-class Activity;  // forward declaration
+class Activity;    // forward declaration
+class RenderLock;  // forward declaration
 
 /**
  * ActivityManager
@@ -70,6 +71,11 @@ class Activity;  // forward declaration
  * It also provides a stack mechanism to allow activities to launch sub-activities and get back the results when the
  * sub-activity is done. For example, the WebServer activity can launch a WifiSelect activity to let the user choose a
  * wifi network, and get back the selected network when the user is done.
+ *
+ * Main differences from Android's ActivityManager:
+ * - No concept of Bunble or Intent extras
+ * - No onPause/onResume, since we don't have a concept of background activities
+ * - onActivityResult is implemented via a callback instead of a separate method, for simplicity
  */
 class ActivityManager {
  protected:
@@ -78,12 +84,12 @@ class ActivityManager {
   std::vector<Activity*> stackActivities;
   Activity* currentActivity = nullptr;
 
-  void exitActivity();
+  void exitActivity(RenderLock& lock);
 
   // Pending activity to be launched on next loop iteration
   Activity* pendingActivity = nullptr;
-  enum PendingAction { Push, Pop, Replace };
-  PendingAction pendingAction = Replace;
+  enum PendingAction { None, Push, Pop, Replace };
+  PendingAction pendingAction = None;
   ActivityResult pendingResult;  // for Pop with result
 
   // Task to render and display the activity
@@ -139,12 +145,15 @@ class ActivityManager {
 
 // RAII helper to lock rendering mutex for the duration of a scope.
 class RenderLock {
+  bool isLocked = false;
+
  public:
   explicit RenderLock();
   explicit RenderLock(Activity&);  // unused for now, but keep for compatibility
   RenderLock(const RenderLock&) = delete;
   RenderLock& operator=(const RenderLock&) = delete;
   ~RenderLock();
+  void unlock();
 };
 
 extern ActivityManager activityManager;  // singleton, to be defined in main.cpp
