@@ -37,6 +37,7 @@ class Activity {
   virtual bool isReaderActivity() const { return false; }
 
   // Start a new activity without destroying the current one
+  // Note: requestUpdate() will be invoked automatically once resultHandler finishes
   void startActivityForResult(Activity* activity, ActivityResultHandler resultHandler);
 
   // Set the result to be passed back to the previous activity when this activity finishes

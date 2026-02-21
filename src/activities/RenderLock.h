@@ -1,6 +1,6 @@
 #pragma once
 
-class Activity;    // forward declaration
+class Activity;  // forward declaration
 
 // RAII helper to lock rendering mutex for the duration of a scope.
 class RenderLock {
