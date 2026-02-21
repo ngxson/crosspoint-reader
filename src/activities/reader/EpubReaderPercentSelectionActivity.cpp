@@ -37,14 +37,16 @@ void EpubReaderPercentSelectionActivity::loop() {
   if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
     ActivityResult result;
     result.isCancelled = true;
-    activityManager.popActivityWithResult(result);
+    setResult(result);
+    finish();
     return;
   }
 
   if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
     ActivityResult result;
     result.selectedPercent = percent;
-    activityManager.popActivityWithResult(result);
+    setResult(result);
+    finish();
     return;
   }
 

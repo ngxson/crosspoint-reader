@@ -52,16 +52,19 @@ void EpubReaderChapterSelectionActivity::loop() {
     if (newSpineIndex == -1) {
       ActivityResult result;
       result.isCancelled = true;
-      activityManager.popActivityWithResult(result);
+      setResult(result);
+      finish();
     } else {
       ActivityResult result;
       result.selectedSpineIndex = newSpineIndex;
-      activityManager.popActivityWithResult(result);
+      setResult(result);
+      finish();
     }
   } else if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
     ActivityResult result;
     result.isCancelled = true;
-    activityManager.popActivityWithResult(result);
+    setResult(result);
+    finish();
   }
 
   buttonNavigator.onNextRelease([this, totalItems] {

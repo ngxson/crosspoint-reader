@@ -53,7 +53,7 @@ void KOReaderSettingsActivity::loop() {
 void KOReaderSettingsActivity::handleSelection() {
   if (selectedIndex == 0) {
     // Username
-    activityManager.pushActivityForResult(
+    startActivityForResult(
         new KeyboardEntryActivity(renderer, mappedInput, tr(STR_KOREADER_USERNAME), KOREADER_STORE.getUsername(),
                                   64,      // maxLength
                                   false),  // not password
@@ -66,7 +66,7 @@ void KOReaderSettingsActivity::handleSelection() {
         });
   } else if (selectedIndex == 1) {
     // Password
-    activityManager.pushActivityForResult(
+    startActivityForResult(
         new KeyboardEntryActivity(renderer, mappedInput, tr(STR_KOREADER_PASSWORD), KOREADER_STORE.getPassword(),
                                   64,      // maxLength
                                   false),  // show characters
@@ -81,20 +81,20 @@ void KOReaderSettingsActivity::handleSelection() {
     // Sync Server URL - prefill with https:// if empty to save typing
     const std::string currentUrl = KOREADER_STORE.getServerUrl();
     const std::string prefillUrl = currentUrl.empty() ? "https://" : currentUrl;
-    activityManager.pushActivityForResult(
-        new KeyboardEntryActivity(renderer, mappedInput, tr(STR_SYNC_SERVER_URL), prefillUrl,
-                                  128,     // maxLength - URLs can be long
-                                  false),  // not password
-        [this](ActivityResult& result) {
-          if (!result.isCancelled) {
-            // Clear if user just left the prefilled https://
-            const std::string urlToSave =
-                (result.inputText == "https://" || result.inputText == "http://") ? "" : result.inputText;
-            KOREADER_STORE.setServerUrl(urlToSave);
-            KOREADER_STORE.saveToFile();
-          }
-          requestUpdate();
-        });
+    startActivityForResult(new KeyboardEntryActivity(renderer, mappedInput, tr(STR_SYNC_SERVER_URL), prefillUrl,
+                                                     128,     // maxLength - URLs can be long
+                                                     false),  // not password
+                           [this](ActivityResult& result) {
+                             if (!result.isCancelled) {
+                               // Clear if user just left the prefilled https://
+                               const std::string urlToSave =
+                                   (result.inputText == "https://" || result.inputText == "http://") ? ""
+                                                                                                     : result.inputText;
+                               KOREADER_STORE.setServerUrl(urlToSave);
+                               KOREADER_STORE.saveToFile();
+                             }
+                             requestUpdate();
+                           });
   } else if (selectedIndex == 3) {
     // Document Matching - toggle between Filename and Binary
     const auto current = KOREADER_STORE.getMatchMethod();
@@ -109,9 +109,8 @@ void KOReaderSettingsActivity::handleSelection() {
       // Can't authenticate without credentials - just show message briefly
       return;
     }
-    activityManager.pushActivityForResult(
-        new KOReaderAuthActivity(renderer, mappedInput, [] { activityManager.popActivity(); }),
-        [this](ActivityResult&) { requestUpdate(); });
+    startActivityForResult(new KOReaderAuthActivity(renderer, mappedInput, [] { activityManager.popActivity(); }),
+                           [this](ActivityResult&) { requestUpdate(); });
   }
 }
 

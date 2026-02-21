@@ -31,12 +31,11 @@ void CalibreConnectActivity::onEnter() {
   exitRequested = false;
 
   if (WiFi.status() != WL_CONNECTED) {
-    activityManager.pushActivityForResult(new WifiSelectionActivity(renderer, mappedInput),
-                                          [this](ActivityResult& result) {
-                                            connectedIP = result.wifiIP;
-                                            connectedSSID = result.wifiSSID;
-                                            onWifiSelectionComplete(result.wifiConnected);
-                                          });
+    startActivityForResult(new WifiSelectionActivity(renderer, mappedInput), [this](ActivityResult& result) {
+      connectedIP = result.wifiIP;
+      connectedSSID = result.wifiSSID;
+      onWifiSelectionComplete(result.wifiConnected);
+    });
   } else {
     connectedIP = WiFi.localIP().toString().c_str();
     connectedSSID = WiFi.SSID().c_str();

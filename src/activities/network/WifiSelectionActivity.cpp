@@ -190,20 +190,19 @@ void WifiSelectionActivity::selectNetwork(const int index) {
     // Show password entry
     state = WifiSelectionState::PASSWORD_ENTRY;
     // Don't allow screen updates while changing activity
-    activityManager.pushActivityForResult(
-        new KeyboardEntryActivity(renderer, mappedInput, tr(STR_ENTER_WIFI_PASSWORD),
-                                  "",    // No initial text
-                                  64,    // Max password length
-                                  false  // Show password by default (hard keyboard to use)
-                                  ),
-        [this](ActivityResult& result) {
-          if (result.isCancelled) {
-            state = WifiSelectionState::NETWORK_LIST;
-            requestUpdate();
-          } else {
-            enteredPassword = result.inputText;
-          }
-        });
+    startActivityForResult(new KeyboardEntryActivity(renderer, mappedInput, tr(STR_ENTER_WIFI_PASSWORD),
+                                                     "",    // No initial text
+                                                     64,    // Max password length
+                                                     false  // Show password by default (hard keyboard to use)
+                                                     ),
+                           [this](ActivityResult& result) {
+                             if (result.isCancelled) {
+                               state = WifiSelectionState::NETWORK_LIST;
+                               requestUpdate();
+                             } else {
+                               enteredPassword = result.inputText;
+                             }
+                           });
   } else {
     // Connect directly for open networks
     attemptConnection();
@@ -690,5 +689,6 @@ void WifiSelectionActivity::onComplete(const bool connected) {
     result.wifiSSID = selectedSSID;
     result.wifiIP = connectedIP;
   }
-  activityManager.popActivityWithResult(result);
+  setResult(result);
+  finish();
 }

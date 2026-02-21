@@ -62,9 +62,8 @@ void OtaUpdateActivity::onEnter() {
 
   // Launch WiFi selection subactivity
   LOG_DBG("OTA", "Launching WifiSelectionActivity...");
-  activityManager.pushActivityForResult(
-      new WifiSelectionActivity(renderer, mappedInput),
-      [this](ActivityResult& result) { onWifiSelectionComplete(result.wifiConnected); });
+  startActivityForResult(new WifiSelectionActivity(renderer, mappedInput),
+                         [this](ActivityResult& result) { onWifiSelectionComplete(result.wifiConnected); });
 }
 
 void OtaUpdateActivity::onExit() {

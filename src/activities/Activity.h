@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "ActivityManager.h"
+#include "ActivityResult.h"
 #include "GfxRenderer.h"
 #include "MappedInputManager.h"
 
@@ -19,8 +20,8 @@ class Activity {
   MappedInputManager& mappedInput;
 
  public:
-  // Will be set by ActivityManager when pushActivityForResult is used
-  std::function<void(ActivityResult&)> resultHandler;
+  ActivityResultHandler resultHandler;
+  ActivityResult result;
 
   explicit Activity(std::string name, GfxRenderer& renderer, MappedInputManager& mappedInput)
       : name(std::move(name)), renderer(renderer), mappedInput(mappedInput) {}
@@ -36,6 +37,15 @@ class Activity {
   virtual bool skipLoopDelay() { return false; }
   virtual bool preventAutoSleep() { return false; }
   virtual bool isReaderActivity() const { return false; }
+
+  // Start a new activity without destroying the current one
+  void startActivityForResult(Activity* activity, ActivityResultHandler resultHandler);
+
+  // Set the result to be passed back to the previous activity when this activity finishes
+  void setResult(ActivityResult& result);
+
+  // Finish this activity and return to the previous one on the stack (if any)
+  void finish();
 
   // Convenience method to facilitate API transition to ActivityManager
   // TODO: remove this in near future

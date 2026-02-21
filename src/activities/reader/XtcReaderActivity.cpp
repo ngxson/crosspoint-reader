@@ -58,14 +58,13 @@ void XtcReaderActivity::loop() {
   // Enter chapter selection activity
   if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
     if (xtc && xtc->hasChapters() && !xtc->getChapters().empty()) {
-      activityManager.pushActivityForResult(
-          new XtcReaderChapterSelectionActivity(renderer, mappedInput, xtc, currentPage),
-          [this](ActivityResult& result) {
-            if (!result.isCancelled) {
-              currentPage = result.selectedPage;
-            }
-            requestUpdate();
-          });
+      startActivityForResult(new XtcReaderChapterSelectionActivity(renderer, mappedInput, xtc, currentPage),
+                             [this](ActivityResult& result) {
+                               if (!result.isCancelled) {
+                                 currentPage = result.selectedPage;
+                               }
+                               requestUpdate();
+                             });
     }
   }
 

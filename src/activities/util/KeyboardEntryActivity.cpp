@@ -323,12 +323,14 @@ void KeyboardEntryActivity::onComplete(const std::string& text) {
   ActivityResult result;
   result.isCancelled = false;
   result.inputText = std::move(text);
-  activityManager.popActivityWithResult(result);
+  setResult(result);
+  finish();
 }
 
 void KeyboardEntryActivity::onCancel() {
   // Pass cancellation back to caller via ActivityResult
   ActivityResult result;
   result.isCancelled = true;
-  activityManager.popActivityWithResult(result);
+  setResult(result);
+  finish();
 }

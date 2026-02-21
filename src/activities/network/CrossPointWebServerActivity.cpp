@@ -48,9 +48,8 @@ void CrossPointWebServerActivity::onEnter() {
 
   // Launch network mode selection subactivity
   LOG_DBG("WEBACT", "Launching NetworkModeSelectionActivity...");
-  activityManager.pushActivityForResult(
-      new NetworkModeSelectionActivity(renderer, mappedInput),
-      [this](ActivityResult& result) { onNetworkModeSelected(result.selectedNetworkMode); });
+  startActivityForResult(new NetworkModeSelectionActivity(renderer, mappedInput),
+                         [this](ActivityResult& result) { onNetworkModeSelected(result.selectedNetworkMode); });
 }
 
 void CrossPointWebServerActivity::onExit() {
@@ -107,19 +106,17 @@ void CrossPointWebServerActivity::onNetworkModeSelected(const NetworkMode mode) 
   isApMode = (mode == NetworkMode::CREATE_HOTSPOT);
 
   if (mode == NetworkMode::CONNECT_CALIBRE) {
-    activityManager.pushActivityForResult(
-        new CalibreConnectActivity(renderer, mappedInput), [this](ActivityResult& result) {
-          state = WebServerActivityState::MODE_SELECTION;
+    startActivityForResult(new CalibreConnectActivity(renderer, mappedInput), [this](ActivityResult& result) {
+      state = WebServerActivityState::MODE_SELECTION;
 
-          activityManager.pushActivityForResult(new NetworkModeSelectionActivity(renderer, mappedInput),
-                                                [this](ActivityResult& result) {
-                                                  if (result.isCancelled) {
-                                                    onGoHome();
-                                                  } else {
-                                                    onNetworkModeSelected(result.selectedNetworkMode);
-                                                  }
-                                                });
-        });
+      startActivityForResult(new NetworkModeSelectionActivity(renderer, mappedInput), [this](ActivityResult& result) {
+        if (result.isCancelled) {
+          onGoHome();
+        } else {
+          onNetworkModeSelected(result.selectedNetworkMode);
+        }
+      });
+    });
     return;
   }
 
@@ -130,12 +127,11 @@ void CrossPointWebServerActivity::onNetworkModeSelected(const NetworkMode mode) 
 
     state = WebServerActivityState::WIFI_SELECTION;
     LOG_DBG("WEBACT", "Launching WifiSelectionActivity...");
-    activityManager.pushActivityForResult(new WifiSelectionActivity(renderer, mappedInput),
-                                          [this](ActivityResult& result) {
-                                            connectedIP = result.wifiIP;
-                                            connectedSSID = result.wifiSSID;
-                                            onWifiSelectionComplete(result.wifiConnected);
-                                          });
+    startActivityForResult(new WifiSelectionActivity(renderer, mappedInput), [this](ActivityResult& result) {
+      connectedIP = result.wifiIP;
+      connectedSSID = result.wifiSSID;
+      onWifiSelectionComplete(result.wifiConnected);
+    });
   } else {
     // AP mode - start access point
     state = WebServerActivityState::AP_STARTING;
@@ -162,9 +158,8 @@ void CrossPointWebServerActivity::onWifiSelectionComplete(const bool connected) 
     // User cancelled - go back to mode selection
     state = WebServerActivityState::MODE_SELECTION;
 
-    activityManager.pushActivityForResult(
-        new NetworkModeSelectionActivity(renderer, mappedInput),
-        [this](ActivityResult& result) { onNetworkModeSelected(result.selectedNetworkMode); });
+    startActivityForResult(new NetworkModeSelectionActivity(renderer, mappedInput),
+                           [this](ActivityResult& result) { onNetworkModeSelected(result.selectedNetworkMode); });
   }
 }
 

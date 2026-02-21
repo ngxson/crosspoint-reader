@@ -88,11 +88,13 @@ void NetworkModeSelectionActivity::onModeSelected(NetworkMode mode) {
   ActivityResult result;
   result.isCancelled = false;
   result.selectedNetworkMode = mode;
-  activityManager.popActivityWithResult(result);
+  setResult(result);
+  finish();
 }
 
 void NetworkModeSelectionActivity::onCancel() {
   ActivityResult result;
   result.isCancelled = true;
-  activityManager.popActivityWithResult(result);
+  setResult(result);
+  finish();
 }

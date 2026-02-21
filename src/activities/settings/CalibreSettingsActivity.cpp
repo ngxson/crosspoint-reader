@@ -51,7 +51,7 @@ void CalibreSettingsActivity::loop() {
 void CalibreSettingsActivity::handleSelection() {
   if (selectedIndex == 0) {
     // OPDS Server URL
-    activityManager.pushActivityForResult(
+    startActivityForResult(
         new KeyboardEntryActivity(renderer, mappedInput, tr(STR_CALIBRE_WEB_URL), SETTINGS.opdsServerUrl, 127, false),
         [this](ActivityResult& result) {
           if (!result.isCancelled) {
@@ -63,7 +63,7 @@ void CalibreSettingsActivity::handleSelection() {
         });
   } else if (selectedIndex == 1) {
     // Username
-    activityManager.pushActivityForResult(
+    startActivityForResult(
         new KeyboardEntryActivity(renderer, mappedInput, tr(STR_USERNAME), SETTINGS.opdsUsername, 63, false),
         [this](ActivityResult& result) {
           if (!result.isCancelled) {
@@ -75,7 +75,7 @@ void CalibreSettingsActivity::handleSelection() {
         });
   } else if (selectedIndex == 2) {
     // Password
-    activityManager.pushActivityForResult(
+    startActivityForResult(
         new KeyboardEntryActivity(renderer, mappedInput, tr(STR_PASSWORD), SETTINGS.opdsPassword, 63, false),
         [this](ActivityResult& result) {
           if (!result.isCancelled) {

@@ -61,12 +61,14 @@ void XtcReaderChapterSelectionActivity::loop() {
     if (!chapters.empty() && selectorIndex >= 0 && selectorIndex < static_cast<int>(chapters.size())) {
       ActivityResult result;
       result.selectedPage = chapters[selectorIndex].startPage;
-      activityManager.popActivityWithResult(result);
+      setResult(result);
+      finish();
     }
   } else if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
     ActivityResult result;
     result.isCancelled = true;
-    activityManager.popActivityWithResult(result);
+    setResult(result);
+    finish();
   }
 
   buttonNavigator.onNextRelease([this, totalItems] {

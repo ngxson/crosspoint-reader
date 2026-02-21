@@ -45,56 +45,72 @@ void ActivityManager::loop() {
     currentActivity->loop();
   }
 
-  if (pendingAction == Pop) {
-    RenderLock lock;
-    pendingAction = None;
-    if (stackActivities.empty()) {
-      LOG_DBG("ACT", "No more activities on stack, going home");
-      goHome();
-      return;
-    } else {
+  while (pendingAction != None) {
+    if (pendingAction == Pop) {
+      RenderLock lock;
+      ActivityResult pendingResult = currentActivity->result;  // copy before we destroy the activity
+
       // Destroy the current activity
       exitActivity(lock);
-      currentActivity = stackActivities.back();
-      stackActivities.pop_back();
-      LOG_DBG("ACT", "Popped from activity stack, size = %d", stackActivities.size());
-      // Handle result if necessary
-      if (currentActivity->resultHandler) {
-        // Move the result handler out of the activity before calling it, to avoid potential issues if the handler tries
-        // to launch a new activity
-        LOG_DBG("ACT", "Handling result for popped activity");
-        auto handler = std::move(currentActivity->resultHandler);
-        currentActivity->resultHandler = nullptr;
-        lock.unlock();  // Handler may acquire its own lock
-        handler(pendingResult);
-        return;
-      }
-    }
+      pendingAction = None;
 
-  } else if (pendingActivity) {
-    // Current activity has requested a new activity to be launched
-    RenderLock lock;
+      if (stackActivities.empty()) {
+        LOG_DBG("ACT", "No more activities on stack, going home");
+        goHome();
+        continue;  // Will launch goHome immediately
 
-    if (pendingAction == Replace) {
-      // Destroy the current activity
-      exitActivity(lock);
-      // Clear the stack
-      LOG_DBG("ACT", "Clearing activity stack");
-      while (!stackActivities.empty()) {
-        stackActivities.back()->onExit();
-        delete stackActivities.back();
+      } else {
+        currentActivity = stackActivities.back();
         stackActivities.pop_back();
-      }
-    } else if (pendingAction == Push) {
-      // Move current activity to stack
-      stackActivities.push_back(currentActivity);
-      LOG_DBG("ACT", "Pushed to activity stack, size = %d", stackActivities.size());
-    }
-    currentActivity = pendingActivity;
-    pendingActivity = nullptr;
+        LOG_DBG("ACT", "Popped from activity stack, new size = %d", stackActivities.size());
+        // Handle result if necessary
+        if (currentActivity->resultHandler) {
+          LOG_DBG("ACT", "Handling result for popped activity");
 
-    lock.unlock();  // onEnter may acquire its own lock
-    currentActivity->onEnter();
+          // Move it here to avoid the case where handler calling another startActivityForResult()
+          auto handler = std::move(currentActivity->resultHandler);
+          currentActivity->resultHandler = nullptr;
+          lock.unlock();  // Handler may acquire its own lock
+          handler(pendingResult);
+        }
+
+        // Request an update to ensure the popped activity gets re-rendered
+        if (pendingAction == None) {
+          requestUpdate();
+        }
+
+        // Handler may request another pending action, we will handle it in the next loop iteration
+        continue;
+      }
+
+    } else if (pendingActivity) {
+      // Current activity has requested a new activity to be launched
+      RenderLock lock;
+
+      if (pendingAction == Replace) {
+        // Destroy the current activity
+        exitActivity(lock);
+        // Clear the stack
+        while (!stackActivities.empty()) {
+          stackActivities.back()->onExit();
+          delete stackActivities.back();
+          stackActivities.pop_back();
+        }
+      } else if (pendingAction == Push) {
+        // Move current activity to stack
+        stackActivities.push_back(currentActivity);
+        LOG_DBG("ACT", "Pushed to activity stack, new size = %d", stackActivities.size());
+      }
+      pendingAction = None;
+      currentActivity = pendingActivity;
+      pendingActivity = nullptr;
+
+      lock.unlock();  // onEnter may acquire its own lock
+      currentActivity->onEnter();
+
+      // onEnter may request another pending action, we will handle it in the next loop iteration
+      continue;
+    }
   }
 }
 
@@ -155,11 +171,6 @@ void ActivityManager::pushActivity(Activity* activity) {
   pendingAction = Push;
 }
 
-void ActivityManager::pushActivityForResult(Activity* activity, std::function<void(ActivityResult&)> resultHandler) {
-  currentActivity->resultHandler = std::move(resultHandler);
-  pushActivity(activity);
-}
-
 void ActivityManager::popActivity() {
   if (pendingActivity) {
     // Should never happen in practice
@@ -168,11 +179,6 @@ void ActivityManager::popActivity() {
     pendingActivity = nullptr;
   }
   pendingAction = Pop;
-}
-
-void ActivityManager::popActivityWithResult(ActivityResult& result) {
-  pendingResult = result;  // copy
-  popActivity();
 }
 
 bool ActivityManager::preventAutoSleep() const { return currentActivity && currentActivity->preventAutoSleep(); }

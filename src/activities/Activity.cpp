@@ -20,3 +20,12 @@ void Activity::onSelectBook(const std::string& path) {
   intent.path = path;
   activityManager.goToReader(std::move(intent));
 }
+
+void Activity::startActivityForResult(Activity* activity, ActivityResultHandler resultHandler) {
+  this->resultHandler = std::move(resultHandler);
+  activityManager.pushActivity(activity);
+}
+
+void Activity::setResult(ActivityResult& result) { this->result = result; }
+
+void Activity::finish() { activityManager.popActivity(); }

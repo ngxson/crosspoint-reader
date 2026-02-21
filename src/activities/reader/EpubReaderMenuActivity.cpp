@@ -38,13 +38,15 @@ void EpubReaderMenuActivity::loop() {
     ActivityResult result;
     result.selectedOrientation = pendingOrientation;
     result.menuAction = static_cast<int>(selectedAction);
-    activityManager.popActivityWithResult(result);
+    setResult(result);
+    finish();
     return;
   } else if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
     ActivityResult result;
     result.isCancelled = true;
     result.selectedOrientation = pendingOrientation;
-    activityManager.popActivityWithResult(result);
+    setResult(result);
+    finish();
     return;
   }
 }

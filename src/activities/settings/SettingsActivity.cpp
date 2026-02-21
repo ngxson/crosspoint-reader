@@ -163,25 +163,25 @@ void SettingsActivity::toggleCurrentSetting() {
 
     switch (setting.action) {
       case SettingAction::RemapFrontButtons:
-        activityManager.pushActivityForResult(new ButtonRemapActivity(renderer, mappedInput, popCb), resultHandler);
+        startActivityForResult(new ButtonRemapActivity(renderer, mappedInput, popCb), resultHandler);
         break;
       case SettingAction::KOReaderSync:
-        activityManager.pushActivityForResult(new KOReaderSettingsActivity(renderer, mappedInput), resultHandler);
+        startActivityForResult(new KOReaderSettingsActivity(renderer, mappedInput), resultHandler);
         break;
       case SettingAction::OPDSBrowser:
-        activityManager.pushActivityForResult(new CalibreSettingsActivity(renderer, mappedInput), resultHandler);
+        startActivityForResult(new CalibreSettingsActivity(renderer, mappedInput), resultHandler);
         break;
       case SettingAction::Network:
-        activityManager.pushActivityForResult(new WifiSelectionActivity(renderer, mappedInput, false), resultHandler);
+        startActivityForResult(new WifiSelectionActivity(renderer, mappedInput, false), resultHandler);
         break;
       case SettingAction::ClearCache:
-        activityManager.pushActivityForResult(new ClearCacheActivity(renderer, mappedInput, popCb), resultHandler);
+        startActivityForResult(new ClearCacheActivity(renderer, mappedInput, popCb), resultHandler);
         break;
       case SettingAction::CheckForUpdates:
-        activityManager.pushActivityForResult(new OtaUpdateActivity(renderer, mappedInput), resultHandler);
+        startActivityForResult(new OtaUpdateActivity(renderer, mappedInput), resultHandler);
         break;
       case SettingAction::Language:
-        activityManager.pushActivityForResult(new LanguageSelectActivity(renderer, mappedInput, popCb), resultHandler);
+        startActivityForResult(new LanguageSelectActivity(renderer, mappedInput, popCb), resultHandler);
         break;
       case SettingAction::None:
         // Do nothing

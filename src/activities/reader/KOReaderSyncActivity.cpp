@@ -46,7 +46,8 @@ void KOReaderSyncActivity::onWifiSelectionComplete(const bool success) {
     LOG_DBG("KOSync", "WiFi connection failed, exiting");
     ActivityResult result;
     result.isCancelled = true;
-    activityManager.popActivityWithResult(result);
+    setResult(result);
+    finish();
     return;
   }
 
@@ -221,9 +222,8 @@ void KOReaderSyncActivity::onEnter() {
 
   // Launch WiFi selection subactivity
   LOG_DBG("KOSync", "Launching WifiSelectionActivity...");
-  activityManager.pushActivityForResult(
-      new WifiSelectionActivity(renderer, mappedInput),
-      [this](ActivityResult& result) { onWifiSelectionComplete(result.wifiConnected); });
+  startActivityForResult(new WifiSelectionActivity(renderer, mappedInput),
+                         [this](ActivityResult& result) { onWifiSelectionComplete(result.wifiConnected); });
 }
 
 void KOReaderSyncActivity::onExit() {
@@ -355,7 +355,8 @@ void KOReaderSyncActivity::loop() {
     if (mappedInput.wasPressed(MappedInputManager::Button::Back)) {
       ActivityResult result;
       result.isCancelled = true;
-      activityManager.popActivityWithResult(result);
+      setResult(result);
+      finish();
     }
     return;
   }
@@ -378,7 +379,8 @@ void KOReaderSyncActivity::loop() {
         ActivityResult result;
         result.syncedSpineIndex = remotePosition.spineIndex;
         result.syncedPage = remotePosition.pageNumber;
-        activityManager.popActivityWithResult(result);
+        setResult(result);
+        finish();
       } else if (selectedOption == 1) {
         // Upload local progress
         performUpload();
@@ -388,7 +390,8 @@ void KOReaderSyncActivity::loop() {
     if (mappedInput.wasPressed(MappedInputManager::Button::Back)) {
       ActivityResult result;
       result.isCancelled = true;
-      activityManager.popActivityWithResult(result);
+      setResult(result);
+      finish();
     }
     return;
   }
@@ -409,7 +412,8 @@ void KOReaderSyncActivity::loop() {
     if (mappedInput.wasPressed(MappedInputManager::Button::Back)) {
       ActivityResult result;
       result.isCancelled = true;
-      activityManager.popActivityWithResult(result);
+      setResult(result);
+      finish();
     }
     return;
   }

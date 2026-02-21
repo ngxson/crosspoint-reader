@@ -128,17 +128,14 @@ void EpubReaderActivity::loop() {
       bookProgress = epub->calculateProgress(currentSpineIndex, chapterProgress) * 100.0f;
     }
     const int bookProgressPercent = clampPercent(static_cast<int>(bookProgress + 0.5f));
-    activityManager.pushActivityForResult(
-        new EpubReaderMenuActivity(renderer, mappedInput, epub->getTitle(), currentPage, totalPages,
-                                   bookProgressPercent, SETTINGS.orientation),
-        [this](ActivityResult& result) {
-          applyOrientation(result.selectedOrientation);
-          if (!result.isCancelled) {
-            onReaderMenuConfirm(static_cast<EpubReaderMenuActivity::MenuAction>(result.menuAction));
-          } else {
-            requestUpdate();
-          }
-        });
+    startActivityForResult(new EpubReaderMenuActivity(renderer, mappedInput, epub->getTitle(), currentPage, totalPages,
+                                                      bookProgressPercent, SETTINGS.orientation),
+                           [this](ActivityResult& result) {
+                             applyOrientation(result.selectedOrientation);
+                             if (!result.isCancelled) {
+                               onReaderMenuConfirm(static_cast<EpubReaderMenuActivity::MenuAction>(result.menuAction));
+                             }
+                           });
   }
 
   // Long press BACK (1s+) goes to file selection
@@ -298,16 +295,15 @@ void EpubReaderActivity::onReaderMenuConfirm(EpubReaderMenuActivity::MenuAction 
     case EpubReaderMenuActivity::MenuAction::SELECT_CHAPTER: {
       const int spineIdx = currentSpineIndex;
       const std::string path = epub->getPath();
-      activityManager.pushActivityForResult(
-          new EpubReaderChapterSelectionActivity(renderer, mappedInput, epub, path, spineIdx),
-          [this](ActivityResult& result) {
-            if (!result.isCancelled && currentSpineIndex != result.selectedSpineIndex) {
-              currentSpineIndex = result.selectedSpineIndex;
-              nextPageNumber = 0;
-              section.reset();
-            }
-            requestUpdate();
-          });
+      startActivityForResult(new EpubReaderChapterSelectionActivity(renderer, mappedInput, epub, path, spineIdx),
+                             [this](ActivityResult& result) {
+                               if (!result.isCancelled && currentSpineIndex != result.selectedSpineIndex) {
+                                 currentSpineIndex = result.selectedSpineIndex;
+                                 nextPageNumber = 0;
+                                 section.reset();
+                               }
+                               requestUpdate();
+                             });
       break;
     }
     case EpubReaderMenuActivity::MenuAction::GO_TO_PERCENT: {
@@ -317,14 +313,13 @@ void EpubReaderActivity::onReaderMenuConfirm(EpubReaderMenuActivity::MenuAction 
         bookProgress = epub->calculateProgress(currentSpineIndex, chapterProgress) * 100.0f;
       }
       const int initialPercent = clampPercent(static_cast<int>(bookProgress + 0.5f));
-      activityManager.pushActivityForResult(
-          new EpubReaderPercentSelectionActivity(renderer, mappedInput, initialPercent),
-          [this](ActivityResult& result) {
-            if (!result.isCancelled) {
-              jumpToPercent(result.selectedPercent);
-            }
-            requestUpdate();
-          });
+      startActivityForResult(new EpubReaderPercentSelectionActivity(renderer, mappedInput, initialPercent),
+                             [this](ActivityResult& result) {
+                               if (!result.isCancelled) {
+                                 jumpToPercent(result.selectedPercent);
+                               }
+                               requestUpdate();
+                             });
       break;
     }
     case EpubReaderMenuActivity::MenuAction::GO_HOME: {
@@ -351,19 +346,19 @@ void EpubReaderActivity::onReaderMenuConfirm(EpubReaderMenuActivity::MenuAction 
       if (KOREADER_STORE.hasCredentials()) {
         const int currentPage = section ? section->currentPage : 0;
         const int totalPages = section ? section->pageCount : 0;
-        activityManager.pushActivityForResult(new KOReaderSyncActivity(renderer, mappedInput, epub, epub->getPath(),
-                                                                       currentSpineIndex, currentPage, totalPages),
-                                              [this](ActivityResult& result) {
-                                                if (!result.isCancelled) {
-                                                  if (currentSpineIndex != result.syncedSpineIndex ||
-                                                      (section && section->currentPage != result.syncedPage)) {
-                                                    currentSpineIndex = result.syncedSpineIndex;
-                                                    nextPageNumber = result.syncedPage;
-                                                    section.reset();
-                                                  }
-                                                }
-                                                requestUpdate();
-                                              });
+        startActivityForResult(new KOReaderSyncActivity(renderer, mappedInput, epub, epub->getPath(), currentSpineIndex,
+                                                        currentPage, totalPages),
+                               [this](ActivityResult& result) {
+                                 if (!result.isCancelled) {
+                                   if (currentSpineIndex != result.syncedSpineIndex ||
+                                       (section && section->currentPage != result.syncedPage)) {
+                                     currentSpineIndex = result.syncedSpineIndex;
+                                     nextPageNumber = result.syncedPage;
+                                     section.reset();
+                                   }
+                                 }
+                                 requestUpdate();
+                               });
       }
       break;
     }
