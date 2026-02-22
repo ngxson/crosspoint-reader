@@ -5,6 +5,7 @@
 #include <freertos/task.h>
 
 #include <cassert>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -46,13 +47,13 @@ class ActivityManager {
  protected:
   GfxRenderer& renderer;
   MappedInputManager& mappedInput;
-  std::vector<Activity*> stackActivities;
-  Activity* currentActivity = nullptr;
+  std::vector<std::unique_ptr<Activity>> stackActivities;
+  std::unique_ptr<Activity> currentActivity;
 
-  void exitActivity(RenderLock& lock);
+  void exitActivity(const RenderLock& lock);
 
   // Pending activity to be launched on next loop iteration
-  Activity* pendingActivity = nullptr;
+  std::unique_ptr<Activity> pendingActivity;
   enum class PendingAction { None, Push, Pop, Replace };
   PendingAction pendingAction = PendingAction::None;
 
@@ -77,7 +78,7 @@ class ActivityManager {
   void loop();
 
   // Will replace currentActivity and drop all activities on stack
-  void replaceActivity(Activity* newActivity);
+  void replaceActivity(std::unique_ptr<Activity>&& newActivity);
 
   // goTo... functions are convenient wrapper for replaceActivity()
   void goToFileTransfer();
@@ -92,7 +93,7 @@ class ActivityManager {
   void goHome();
 
   // This will move current activity to stack instead of deleting it
-  void pushActivity(Activity* activity);
+  void pushActivity(std::unique_ptr<Activity>&& activity);
 
   // Remove the currentActivity, returning the last one on stack
   // Note: if popActivity() on last activity on the stack, we will goHome()

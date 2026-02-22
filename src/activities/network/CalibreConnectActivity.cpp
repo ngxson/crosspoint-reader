@@ -31,11 +31,12 @@ void CalibreConnectActivity::onEnter() {
   exitRequested = false;
 
   if (WiFi.status() != WL_CONNECTED) {
-    startActivityForResult(new WifiSelectionActivity(renderer, mappedInput), [this](const ActivityResult& result) {
-      connectedIP = result.wifiIP;
-      connectedSSID = result.wifiSSID;
-      onWifiSelectionComplete(result.wifiConnected);
-    });
+    startActivityForResult(std::make_unique<WifiSelectionActivity>(renderer, mappedInput),
+                           [this](const ActivityResult& result) {
+                             connectedIP = result.wifiIP;
+                             connectedSSID = result.wifiSSID;
+                             onWifiSelectionComplete(result.wifiConnected);
+                           });
   } else {
     connectedIP = WiFi.localIP().toString().c_str();
     connectedSSID = WiFi.SSID().c_str();

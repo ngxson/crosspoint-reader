@@ -48,13 +48,14 @@ void CrossPointWebServerActivity::onEnter() {
 
   // Launch network mode selection subactivity
   LOG_DBG("WEBACT", "Launching NetworkModeSelectionActivity...");
-  startActivityForResult(new NetworkModeSelectionActivity(renderer, mappedInput), [this](const ActivityResult& result) {
-    if (result.isCancelled) {
-      onGoHome();
-    } else {
-      onNetworkModeSelected(result.selectedNetworkMode);
-    }
-  });
+  startActivityForResult(std::make_unique<NetworkModeSelectionActivity>(renderer, mappedInput),
+                         [this](const ActivityResult& result) {
+                           if (result.isCancelled) {
+                             onGoHome();
+                           } else {
+                             onNetworkModeSelected(result.selectedNetworkMode);
+                           }
+                         });
 }
 
 void CrossPointWebServerActivity::onExit() {
@@ -111,18 +112,19 @@ void CrossPointWebServerActivity::onNetworkModeSelected(const NetworkMode mode) 
   isApMode = (mode == NetworkMode::CREATE_HOTSPOT);
 
   if (mode == NetworkMode::CONNECT_CALIBRE) {
-    startActivityForResult(new CalibreConnectActivity(renderer, mappedInput), [this](const ActivityResult& result) {
-      state = WebServerActivityState::MODE_SELECTION;
+    startActivityForResult(
+        std::make_unique<CalibreConnectActivity>(renderer, mappedInput), [this](const ActivityResult& result) {
+          state = WebServerActivityState::MODE_SELECTION;
 
-      startActivityForResult(new NetworkModeSelectionActivity(renderer, mappedInput),
-                             [this](const ActivityResult& result) {
-                               if (result.isCancelled) {
-                                 onGoHome();
-                               } else {
-                                 onNetworkModeSelected(result.selectedNetworkMode);
-                               }
-                             });
-    });
+          startActivityForResult(std::make_unique<NetworkModeSelectionActivity>(renderer, mappedInput),
+                                 [this](const ActivityResult& result) {
+                                   if (result.isCancelled) {
+                                     onGoHome();
+                                   } else {
+                                     onNetworkModeSelected(result.selectedNetworkMode);
+                                   }
+                                 });
+        });
     return;
   }
 
@@ -133,11 +135,12 @@ void CrossPointWebServerActivity::onNetworkModeSelected(const NetworkMode mode) 
 
     state = WebServerActivityState::WIFI_SELECTION;
     LOG_DBG("WEBACT", "Launching WifiSelectionActivity...");
-    startActivityForResult(new WifiSelectionActivity(renderer, mappedInput), [this](const ActivityResult& result) {
-      connectedIP = result.wifiIP;
-      connectedSSID = result.wifiSSID;
-      onWifiSelectionComplete(result.wifiConnected);
-    });
+    startActivityForResult(std::make_unique<WifiSelectionActivity>(renderer, mappedInput),
+                           [this](const ActivityResult& result) {
+                             connectedIP = result.wifiIP;
+                             connectedSSID = result.wifiSSID;
+                             onWifiSelectionComplete(result.wifiConnected);
+                           });
   } else {
     // AP mode - start access point
     state = WebServerActivityState::AP_STARTING;
@@ -164,7 +167,7 @@ void CrossPointWebServerActivity::onWifiSelectionComplete(const bool connected) 
     // User cancelled - go back to mode selection
     state = WebServerActivityState::MODE_SELECTION;
 
-    startActivityForResult(new NetworkModeSelectionActivity(renderer, mappedInput),
+    startActivityForResult(std::make_unique<NetworkModeSelectionActivity>(renderer, mappedInput),
                            [this](const ActivityResult& result) {
                              if (result.isCancelled) {
                                onGoHome();

@@ -63,7 +63,7 @@ void ActivityManager::loop() {
         continue;  // Will launch goHome immediately
 
       } else {
-        currentActivity = stackActivities.back();
+        currentActivity = std::move(stackActivities.back());
         stackActivities.pop_back();
         LOG_DBG("ACT", "Popped from activity stack, new size = %d", stackActivities.size());
         // Handle result if necessary
@@ -96,17 +96,15 @@ void ActivityManager::loop() {
         // Clear the stack
         while (!stackActivities.empty()) {
           stackActivities.back()->onExit();
-          delete stackActivities.back();
           stackActivities.pop_back();
         }
       } else if (pendingAction == PendingAction::Push) {
         // Move current activity to stack
-        stackActivities.push_back(currentActivity);
+        stackActivities.push_back(std::move(currentActivity));
         LOG_DBG("ACT", "Pushed to activity stack, new size = %d", stackActivities.size());
       }
       pendingAction = PendingAction::None;
-      currentActivity = pendingActivity;
-      pendingActivity = nullptr;
+      currentActivity = std::move(pendingActivity);
 
       lock.unlock();  // onEnter may acquire its own lock
       currentActivity->onEnter();
@@ -117,66 +115,71 @@ void ActivityManager::loop() {
   }
 }
 
-void ActivityManager::exitActivity(RenderLock& lock) {
+void ActivityManager::exitActivity(const RenderLock& lock) {
   // Note: lock must be held by the caller
   if (currentActivity) {
     currentActivity->onExit();
-    delete currentActivity;
-    currentActivity = nullptr;
+    currentActivity.reset();
   }
 }
 
-void ActivityManager::replaceActivity(Activity* newActivity) {
+void ActivityManager::replaceActivity(std::unique_ptr<Activity>&& newActivity) {
   // Note: no lock here, this is usually called by loop() and we may run into deadlock
   if (currentActivity) {
-    // Defer launch if we're currently in an activity, to avoid deleting the current activity leading to the "delete
-    // this" problem
-    pendingActivity = newActivity;
+    // Defer launch if we're currently in an activity, to avoid deleting the current activity
+    // leading to the "delete this" problem
+    pendingActivity = std::move(newActivity);
     pendingAction = PendingAction::Replace;
   } else {
     // No current activity, safe to launch immediately
-    currentActivity = newActivity;
+    currentActivity = std::move(newActivity);
     currentActivity->onEnter();
   }
 }
 
-void ActivityManager::goToFileTransfer() { replaceActivity(new CrossPointWebServerActivity(renderer, mappedInput)); }
-
-void ActivityManager::goToSettings() { replaceActivity(new SettingsActivity(renderer, mappedInput)); }
-
-void ActivityManager::goToMyLibrary(Intent&& intent) {
-  replaceActivity(new MyLibraryActivity(renderer, mappedInput, intent.path));
+void ActivityManager::goToFileTransfer() {
+  replaceActivity(std::make_unique<CrossPointWebServerActivity>(renderer, mappedInput));
 }
 
-void ActivityManager::goToRecentBooks() { replaceActivity(new RecentBooksActivity(renderer, mappedInput)); }
+void ActivityManager::goToSettings() { replaceActivity(std::make_unique<SettingsActivity>(renderer, mappedInput)); }
 
-void ActivityManager::goToBrowser() { replaceActivity(new OpdsBookBrowserActivity(renderer, mappedInput)); }
+void ActivityManager::goToMyLibrary(Intent&& intent) {
+  replaceActivity(std::make_unique<MyLibraryActivity>(renderer, mappedInput, intent.path));
+}
+
+void ActivityManager::goToRecentBooks() {
+  replaceActivity(std::make_unique<RecentBooksActivity>(renderer, mappedInput));
+}
+
+void ActivityManager::goToBrowser() {
+  replaceActivity(std::make_unique<OpdsBookBrowserActivity>(renderer, mappedInput));
+}
 
 void ActivityManager::goToReader(Intent&& intent) {
-  replaceActivity(new ReaderActivity(renderer, mappedInput, intent.path));
+  replaceActivity(std::make_unique<ReaderActivity>(renderer, mappedInput, intent.path));
 }
 
 void ActivityManager::goToSleep() {
-  replaceActivity(new SleepActivity(renderer, mappedInput));
+  replaceActivity(std::make_unique<SleepActivity>(renderer, mappedInput));
   loop();  // Important: sleep screen must be rendered immediately, the caller will go to sleep right after this returns
 }
 
-void ActivityManager::goToBoot() { replaceActivity(new BootActivity(renderer, mappedInput)); }
+void ActivityManager::goToBoot() { replaceActivity(std::make_unique<BootActivity>(renderer, mappedInput)); }
 
 void ActivityManager::goToFullScreenMessage(Intent&& intent) {
-  replaceActivity(new FullScreenMessageActivity(renderer, mappedInput, intent.message, intent.messageStyle));
+  replaceActivity(
+      std::make_unique<FullScreenMessageActivity>(renderer, mappedInput, intent.message, intent.messageStyle));
 }
 
-void ActivityManager::goHome() { replaceActivity(new HomeActivity(renderer, mappedInput)); }
+void ActivityManager::goHome() { replaceActivity(std::make_unique<HomeActivity>(renderer, mappedInput)); }
 
-void ActivityManager::pushActivity(Activity* activity) {
+void ActivityManager::pushActivity(std::unique_ptr<Activity>&& activity) {
   if (pendingActivity) {
     // Should never happen in practice
     LOG_ERR("ACT", "pendingActivity while pushActivity is not expected");
-    delete pendingActivity;
-    pendingActivity = nullptr;
+    pendingActivity.reset();
   }
-  pendingActivity = activity;
+  pendingActivity = std::move(activity);
   pendingAction = PendingAction::Push;
 }
 
@@ -184,8 +187,7 @@ void ActivityManager::popActivity() {
   if (pendingActivity) {
     // Should never happen in practice
     LOG_ERR("ACT", "pendingActivity while popActivity is not expected");
-    delete pendingActivity;
-    pendingActivity = nullptr;
+    pendingActivity.reset();
   }
   pendingAction = PendingAction::Pop;
 }

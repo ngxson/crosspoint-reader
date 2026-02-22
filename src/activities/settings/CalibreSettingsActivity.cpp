@@ -51,37 +51,40 @@ void CalibreSettingsActivity::loop() {
 void CalibreSettingsActivity::handleSelection() {
   if (selectedIndex == 0) {
     // OPDS Server URL
-    startActivityForResult(
-        new KeyboardEntryActivity(renderer, mappedInput, tr(STR_CALIBRE_WEB_URL), SETTINGS.opdsServerUrl, 127, false),
-        [this](const ActivityResult& result) {
-          if (!result.isCancelled) {
-            strncpy(SETTINGS.opdsServerUrl, result.inputText.c_str(), sizeof(SETTINGS.opdsServerUrl) - 1);
-            SETTINGS.opdsServerUrl[sizeof(SETTINGS.opdsServerUrl) - 1] = '\0';
-            SETTINGS.saveToFile();
-          }
-        });
+    startActivityForResult(std::make_unique<KeyboardEntryActivity>(renderer, mappedInput, tr(STR_CALIBRE_WEB_URL),
+                                                                   SETTINGS.opdsServerUrl, 127, false),
+                           [this](const ActivityResult& result) {
+                             if (!result.isCancelled) {
+                               strncpy(SETTINGS.opdsServerUrl, result.inputText.c_str(),
+                                       sizeof(SETTINGS.opdsServerUrl) - 1);
+                               SETTINGS.opdsServerUrl[sizeof(SETTINGS.opdsServerUrl) - 1] = '\0';
+                               SETTINGS.saveToFile();
+                             }
+                           });
   } else if (selectedIndex == 1) {
     // Username
-    startActivityForResult(
-        new KeyboardEntryActivity(renderer, mappedInput, tr(STR_USERNAME), SETTINGS.opdsUsername, 63, false),
-        [this](const ActivityResult& result) {
-          if (!result.isCancelled) {
-            strncpy(SETTINGS.opdsUsername, result.inputText.c_str(), sizeof(SETTINGS.opdsUsername) - 1);
-            SETTINGS.opdsUsername[sizeof(SETTINGS.opdsUsername) - 1] = '\0';
-            SETTINGS.saveToFile();
-          }
-        });
+    startActivityForResult(std::make_unique<KeyboardEntryActivity>(renderer, mappedInput, tr(STR_USERNAME),
+                                                                   SETTINGS.opdsUsername, 63, false),
+                           [this](const ActivityResult& result) {
+                             if (!result.isCancelled) {
+                               strncpy(SETTINGS.opdsUsername, result.inputText.c_str(),
+                                       sizeof(SETTINGS.opdsUsername) - 1);
+                               SETTINGS.opdsUsername[sizeof(SETTINGS.opdsUsername) - 1] = '\0';
+                               SETTINGS.saveToFile();
+                             }
+                           });
   } else if (selectedIndex == 2) {
     // Password
-    startActivityForResult(
-        new KeyboardEntryActivity(renderer, mappedInput, tr(STR_PASSWORD), SETTINGS.opdsPassword, 63, false),
-        [this](const ActivityResult& result) {
-          if (!result.isCancelled) {
-            strncpy(SETTINGS.opdsPassword, result.inputText.c_str(), sizeof(SETTINGS.opdsPassword) - 1);
-            SETTINGS.opdsPassword[sizeof(SETTINGS.opdsPassword) - 1] = '\0';
-            SETTINGS.saveToFile();
-          }
-        });
+    startActivityForResult(std::make_unique<KeyboardEntryActivity>(renderer, mappedInput, tr(STR_PASSWORD),
+                                                                   SETTINGS.opdsPassword, 63, false),
+                           [this](const ActivityResult& result) {
+                             if (!result.isCancelled) {
+                               strncpy(SETTINGS.opdsPassword, result.inputText.c_str(),
+                                       sizeof(SETTINGS.opdsPassword) - 1);
+                               SETTINGS.opdsPassword[sizeof(SETTINGS.opdsPassword) - 1] = '\0';
+                               SETTINGS.saveToFile();
+                             }
+                           });
   }
 }
 

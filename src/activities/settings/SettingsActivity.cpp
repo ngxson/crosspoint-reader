@@ -162,25 +162,25 @@ void SettingsActivity::toggleCurrentSetting() {
 
     switch (setting.action) {
       case SettingAction::RemapFrontButtons:
-        startActivityForResult(new ButtonRemapActivity(renderer, mappedInput), resultHandler);
+        startActivityForResult(std::make_unique<ButtonRemapActivity>(renderer, mappedInput), resultHandler);
         break;
       case SettingAction::KOReaderSync:
-        startActivityForResult(new KOReaderSettingsActivity(renderer, mappedInput), resultHandler);
+        startActivityForResult(std::make_unique<KOReaderSettingsActivity>(renderer, mappedInput), resultHandler);
         break;
       case SettingAction::OPDSBrowser:
-        startActivityForResult(new CalibreSettingsActivity(renderer, mappedInput), resultHandler);
+        startActivityForResult(std::make_unique<CalibreSettingsActivity>(renderer, mappedInput), resultHandler);
         break;
       case SettingAction::Network:
-        startActivityForResult(new WifiSelectionActivity(renderer, mappedInput, false), resultHandler);
+        startActivityForResult(std::make_unique<WifiSelectionActivity>(renderer, mappedInput, false), resultHandler);
         break;
       case SettingAction::ClearCache:
-        startActivityForResult(new ClearCacheActivity(renderer, mappedInput), resultHandler);
+        startActivityForResult(std::make_unique<ClearCacheActivity>(renderer, mappedInput), resultHandler);
         break;
       case SettingAction::CheckForUpdates:
-        startActivityForResult(new OtaUpdateActivity(renderer, mappedInput), resultHandler);
+        startActivityForResult(std::make_unique<OtaUpdateActivity>(renderer, mappedInput), resultHandler);
         break;
       case SettingAction::Language:
-        startActivityForResult(new LanguageSelectActivity(renderer, mappedInput), resultHandler);
+        startActivityForResult(std::make_unique<LanguageSelectActivity>(renderer, mappedInput), resultHandler);
         break;
       case SettingAction::None:
         // Do nothing

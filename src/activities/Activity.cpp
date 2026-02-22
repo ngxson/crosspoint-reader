@@ -21,9 +21,9 @@ void Activity::onSelectBook(const std::string& path) {
   activityManager.goToReader(std::move(intent));
 }
 
-void Activity::startActivityForResult(Activity* activity, ActivityResultHandler resultHandler) {
+void Activity::startActivityForResult(std::unique_ptr<Activity>&& activity, ActivityResultHandler resultHandler) {
   this->resultHandler = std::move(resultHandler);
-  activityManager.pushActivity(activity);
+  activityManager.pushActivity(std::move(activity));
 }
 
 void Activity::setResult(const ActivityResult& result) { this->result = result; }
