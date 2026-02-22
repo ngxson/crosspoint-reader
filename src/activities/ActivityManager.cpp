@@ -47,14 +47,14 @@ void ActivityManager::loop() {
     currentActivity->loop();
   }
 
-  while (pendingAction != None) {
-    if (pendingAction == Pop) {
+  while (pendingAction != PendingAction::None) {
+    if (pendingAction == PendingAction::Pop) {
       RenderLock lock;
       ActivityResult pendingResult = currentActivity->result;  // copy before we destroy the activity
 
       // Destroy the current activity
       exitActivity(lock);
-      pendingAction = None;
+      pendingAction = PendingAction::None;
 
       if (stackActivities.empty()) {
         LOG_DBG("ACT", "No more activities on stack, going home");
@@ -78,7 +78,7 @@ void ActivityManager::loop() {
         }
 
         // Request an update to ensure the popped activity gets re-rendered
-        if (pendingAction == None) {
+        if (pendingAction == PendingAction::None) {
           requestUpdate();
         }
 
@@ -90,7 +90,7 @@ void ActivityManager::loop() {
       // Current activity has requested a new activity to be launched
       RenderLock lock;
 
-      if (pendingAction == Replace) {
+      if (pendingAction == PendingAction::Replace) {
         // Destroy the current activity
         exitActivity(lock);
         // Clear the stack
@@ -99,12 +99,12 @@ void ActivityManager::loop() {
           delete stackActivities.back();
           stackActivities.pop_back();
         }
-      } else if (pendingAction == Push) {
+      } else if (pendingAction == PendingAction::Push) {
         // Move current activity to stack
         stackActivities.push_back(currentActivity);
         LOG_DBG("ACT", "Pushed to activity stack, new size = %d", stackActivities.size());
       }
-      pendingAction = None;
+      pendingAction = PendingAction::None;
       currentActivity = pendingActivity;
       pendingActivity = nullptr;
 
@@ -132,7 +132,7 @@ void ActivityManager::replaceActivity(Activity* newActivity) {
     // Defer launch if we're currently in an activity, to avoid deleting the current activity leading to the "delete
     // this" problem
     pendingActivity = newActivity;
-    pendingAction = Replace;
+    pendingAction = PendingAction::Replace;
   } else {
     // No current activity, safe to launch immediately
     currentActivity = newActivity;
@@ -177,7 +177,7 @@ void ActivityManager::pushActivity(Activity* activity) {
     pendingActivity = nullptr;
   }
   pendingActivity = activity;
-  pendingAction = Push;
+  pendingAction = PendingAction::Push;
 }
 
 void ActivityManager::popActivity() {
@@ -187,7 +187,7 @@ void ActivityManager::popActivity() {
     delete pendingActivity;
     pendingActivity = nullptr;
   }
-  pendingAction = Pop;
+  pendingAction = PendingAction::Pop;
 }
 
 bool ActivityManager::preventAutoSleep() const { return currentActivity && currentActivity->preventAutoSleep(); }

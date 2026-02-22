@@ -53,8 +53,8 @@ class ActivityManager {
 
   // Pending activity to be launched on next loop iteration
   Activity* pendingActivity = nullptr;
-  enum PendingAction { None, Push, Pop, Replace };
-  PendingAction pendingAction = None;
+  enum class PendingAction { None, Push, Pop, Replace };
+  PendingAction pendingAction = PendingAction::None;
 
   // Task to render and display the activity
   TaskHandle_t renderTaskHandle = nullptr;
