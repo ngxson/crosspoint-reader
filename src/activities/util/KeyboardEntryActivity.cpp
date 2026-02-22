@@ -84,9 +84,7 @@ void KeyboardEntryActivity::handleKeyPress() {
 
     if (selectedCol >= DONE_COL) {
       // Done button
-      if (onComplete) {
-        onComplete(text);
-      }
+      onComplete(text);
       return;
     }
   }
@@ -183,14 +181,12 @@ void KeyboardEntryActivity::loop() {
 
   // Cancel
   if (mappedInput.wasPressed(MappedInputManager::Button::Back)) {
-    if (onCancel) {
-      onCancel();
-    }
+    onCancel();
     requestUpdate();
   }
 }
 
-void KeyboardEntryActivity::render(Activity::RenderLock&&) {
+void KeyboardEntryActivity::render(RenderLock&&) {
   renderer.clearScreen();
 
   const auto pageWidth = renderer.getScreenWidth();
@@ -320,4 +316,16 @@ void KeyboardEntryActivity::render(Activity::RenderLock&&) {
   GUI.drawSideButtonHints(renderer, ">", "<");
 
   renderer.displayBuffer();
+}
+
+void KeyboardEntryActivity::onComplete(std::string text) {
+  setResult(KeyboardResult{std::move(text)});
+  finish();
+}
+
+void KeyboardEntryActivity::onCancel() {
+  ActivityResult result;
+  result.isCancelled = true;
+  setResult(std::move(result));
+  finish();
 }
