@@ -162,7 +162,7 @@ void CrossPointWebServer::begin() {
   // Collect WebDAV headers and register handler
   const char* davHeaders[] = {"Depth", "Destination", "Overwrite", "If", "Lock-Token", "Timeout"};
   server->collectHeaders(davHeaders, 6);
-  server->addHandler(&davHandler);
+  server->addHandler(new WebDAVHandler());
   LOG_DBG("WEB", "WebDAV handler initialized");
 
   server->begin();
