@@ -78,9 +78,7 @@ void TxtReaderActivity::onExit() {
 void TxtReaderActivity::loop() {
   // Long press BACK (1s+) goes to file selection
   if (mappedInput.isPressed(MappedInputManager::Button::Back) && mappedInput.getHeldTime() >= goHomeMs) {
-    Intent intent;
-    intent.path = txt ? txt->getPath() : "";
-    activityManager.goToMyLibrary(std::move(intent));
+    activityManager.goToMyLibrary(txt ? txt->getPath() : "");
     return;
   }
 

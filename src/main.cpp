@@ -243,10 +243,7 @@ void setup() {
   if (!Storage.begin()) {
     LOG_ERR("MAIN", "SD card initialization failed");
     setupDisplayAndFonts();
-    Intent intent;
-    intent.message = "SD card error";
-    intent.messageStyle = EpdFontFamily::BOLD;
-    activityManager.goToFullScreenMessage(std::move(intent));
+    activityManager.goToFullScreenMessage("SD card error", EpdFontFamily::BOLD);
     return;
   }
 
@@ -295,9 +292,7 @@ void setup() {
     APP_STATE.openEpubPath = "";
     APP_STATE.readerActivityLoadCount++;
     APP_STATE.saveToFile();
-    Intent intent;
-    intent.path = path;
-    activityManager.goToReader(std::move(intent));
+    activityManager.goToReader(path);
   }
 
   // Ensure we're not still holding the power button before leaving setup

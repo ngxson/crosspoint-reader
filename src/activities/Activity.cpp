@@ -16,9 +16,7 @@ void Activity::requestUpdateAndWait() {
 void Activity::onGoHome() { activityManager.goHome(); }
 
 void Activity::onSelectBook(const std::string& path) {
-  Intent intent;
-  intent.path = path;
-  activityManager.goToReader(std::move(intent));
+  activityManager.goToReader(path);
 }
 
 void Activity::startActivityForResult(std::unique_ptr<Activity>&& activity, ActivityResultHandler resultHandler) {

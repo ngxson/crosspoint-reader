@@ -147,9 +147,7 @@ void EpubReaderActivity::loop() {
 
   // Long press BACK (1s+) goes to file selection
   if (mappedInput.isPressed(MappedInputManager::Button::Back) && mappedInput.getHeldTime() >= goHomeMs) {
-    Intent intent;
-    intent.path = epub ? epub->getPath() : "";
-    activityManager.goToMyLibrary(std::move(intent));
+    activityManager.goToMyLibrary(epub ? epub->getPath() : "");
     return;
   }
 

@@ -143,8 +143,8 @@ void ActivityManager::goToFileTransfer() {
 
 void ActivityManager::goToSettings() { replaceActivity(std::make_unique<SettingsActivity>(renderer, mappedInput)); }
 
-void ActivityManager::goToMyLibrary(Intent&& intent) {
-  replaceActivity(std::make_unique<MyLibraryActivity>(renderer, mappedInput, intent.path));
+void ActivityManager::goToMyLibrary(std::string path) {
+  replaceActivity(std::make_unique<MyLibraryActivity>(renderer, mappedInput, std::move(path)));
 }
 
 void ActivityManager::goToRecentBooks() {
@@ -155,8 +155,8 @@ void ActivityManager::goToBrowser() {
   replaceActivity(std::make_unique<OpdsBookBrowserActivity>(renderer, mappedInput));
 }
 
-void ActivityManager::goToReader(Intent&& intent) {
-  replaceActivity(std::make_unique<ReaderActivity>(renderer, mappedInput, intent.path));
+void ActivityManager::goToReader(std::string path) {
+  replaceActivity(std::make_unique<ReaderActivity>(renderer, mappedInput, std::move(path)));
 }
 
 void ActivityManager::goToSleep() {
@@ -166,9 +166,8 @@ void ActivityManager::goToSleep() {
 
 void ActivityManager::goToBoot() { replaceActivity(std::make_unique<BootActivity>(renderer, mappedInput)); }
 
-void ActivityManager::goToFullScreenMessage(Intent&& intent) {
-  replaceActivity(
-      std::make_unique<FullScreenMessageActivity>(renderer, mappedInput, intent.message, intent.messageStyle));
+void ActivityManager::goToFullScreenMessage(std::string message, EpdFontFamily::Style style) {
+  replaceActivity(std::make_unique<FullScreenMessageActivity>(renderer, mappedInput, std::move(message), style));
 }
 
 void ActivityManager::goHome() { replaceActivity(std::make_unique<HomeActivity>(renderer, mappedInput)); }

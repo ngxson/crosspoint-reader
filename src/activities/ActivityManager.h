@@ -14,17 +14,6 @@
 #include "MappedInputManager.h"
 #include "RenderLock.h"
 
-struct Intent {
-  // IMPORTANT: only include copiable data here, do NOT pass a pointer or reference
-
-  // For MyLibraryActivity and ReaderActivity
-  std::string path;
-
-  // For FullScreenMessageActivity
-  std::string message;
-  EpdFontFamily::Style messageStyle = EpdFontFamily::REGULAR;
-};
-
 class Activity;    // forward declaration
 class RenderLock;  // forward declaration
 
@@ -39,7 +28,6 @@ class RenderLock;  // forward declaration
  * wifi network, and get back the selected network when the user is done.
  *
  * Main differences from Android's ActivityManager:
- * - No concept of Bundle or Intent extras
  * - No onPause/onResume, since we don't have a concept of background activities
  * - onActivityResult is implemented via a callback instead of a separate method, for simplicity
  */
@@ -83,13 +71,13 @@ class ActivityManager {
   // goTo... functions are convenient wrapper for replaceActivity()
   void goToFileTransfer();
   void goToSettings();
-  void goToMyLibrary(Intent&& intent);
+  void goToMyLibrary(std::string path = {});
   void goToRecentBooks();
   void goToBrowser();
-  void goToReader(Intent&& intent);
+  void goToReader(std::string path);
   void goToSleep();
   void goToBoot();
-  void goToFullScreenMessage(Intent&& intent);
+  void goToFullScreenMessage(std::string message, EpdFontFamily::Style style = EpdFontFamily::REGULAR);
   void goHome();
 
   // This will move current activity to stack instead of deleting it
