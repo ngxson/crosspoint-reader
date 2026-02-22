@@ -42,7 +42,7 @@ class Activity {
   void startActivityForResult(std::unique_ptr<Activity>&& activity, ActivityResultHandler resultHandler);
 
   // Set the result to be passed back to the previous activity when this activity finishes
-  void setResult(const ActivityResult& result);
+  void setResult(ActivityResult&& result);
 
   // Finish this activity and return to the previous one on the stack (if any)
   void finish();

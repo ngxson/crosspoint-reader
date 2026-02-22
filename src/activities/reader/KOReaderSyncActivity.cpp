@@ -46,7 +46,7 @@ void KOReaderSyncActivity::onWifiSelectionComplete(const bool success) {
     LOG_DBG("KOSync", "WiFi connection failed, exiting");
     ActivityResult result;
     result.isCancelled = true;
-    setResult(result);
+    setResult(std::move(result));
     finish();
     return;
   }
@@ -223,7 +223,7 @@ void KOReaderSyncActivity::onEnter() {
   // Launch WiFi selection subactivity
   LOG_DBG("KOSync", "Launching WifiSelectionActivity...");
   startActivityForResult(std::make_unique<WifiSelectionActivity>(renderer, mappedInput),
-                         [this](const ActivityResult& result) { onWifiSelectionComplete(result.wifiConnected); });
+                         [this](const ActivityResult& result) { onWifiSelectionComplete(!result.isCancelled); });
 }
 
 void KOReaderSyncActivity::onExit() {
@@ -355,7 +355,7 @@ void KOReaderSyncActivity::loop() {
     if (mappedInput.wasPressed(MappedInputManager::Button::Back)) {
       ActivityResult result;
       result.isCancelled = true;
-      setResult(result);
+      setResult(std::move(result));
       finish();
     }
     return;
@@ -376,10 +376,7 @@ void KOReaderSyncActivity::loop() {
     if (mappedInput.wasPressed(MappedInputManager::Button::Confirm)) {
       if (selectedOption == 0) {
         // Apply remote progress
-        ActivityResult result;
-        result.syncedSpineIndex = remotePosition.spineIndex;
-        result.syncedPage = remotePosition.pageNumber;
-        setResult(result);
+        setResult(SyncResult{remotePosition.spineIndex, remotePosition.pageNumber});
         finish();
       } else if (selectedOption == 1) {
         // Upload local progress
@@ -390,7 +387,7 @@ void KOReaderSyncActivity::loop() {
     if (mappedInput.wasPressed(MappedInputManager::Button::Back)) {
       ActivityResult result;
       result.isCancelled = true;
-      setResult(result);
+      setResult(std::move(result));
       finish();
     }
     return;
@@ -412,7 +409,7 @@ void KOReaderSyncActivity::loop() {
     if (mappedInput.wasPressed(MappedInputManager::Button::Back)) {
       ActivityResult result;
       result.isCancelled = true;
-      setResult(result);
+      setResult(std::move(result));
       finish();
     }
     return;

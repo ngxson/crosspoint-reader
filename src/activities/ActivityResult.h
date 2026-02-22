@@ -3,44 +3,58 @@
 #include <cstdint>
 #include <functional>
 #include <string>
+#include <type_traits>
+#include <variant>
 
-// TODO: move this to the correct place
-enum class NetworkMode { JOIN_NETWORK, CONNECT_CALIBRE, CREATE_HOTSPOT };
+struct WifiResult {
+  bool connected = false;
+  std::string ssid;
+  std::string ip;
+};
+
+struct KeyboardResult {
+  std::string text;
+};
+
+struct MenuResult {
+  int action = -1;
+  uint8_t orientation = 0;
+};
+
+struct ChapterResult {
+  int spineIndex = 0;
+};
+
+struct PercentResult {
+  int percent = 0;
+};
+
+struct PageResult {
+  uint32_t page = 0;
+};
+
+struct SyncResult {
+  int spineIndex = 0;
+  int page = 0;
+};
+
+enum class NetworkMode;
+
+struct NetworkModeResult {
+  NetworkMode mode;
+};
+
+using ResultVariant = std::variant<std::monostate, WifiResult, KeyboardResult, MenuResult, ChapterResult, PercentResult,
+                                   PageResult, SyncResult, NetworkModeResult>;
 
 struct ActivityResult {
-  // IMPORTANT: only include copiable data here, do NOT pass a pointer or reference
-
   bool isCancelled = false;
+  ResultVariant data;
 
-  // For NetworkModeSelectionActivity result
-  NetworkMode selectedNetworkMode = NetworkMode::JOIN_NETWORK;
+  ActivityResult() = default;
 
-  // For WifiSelectionActivity result
-  std::string wifiSSID;
-  std::string wifiIP;
-  bool wifiConnected = false;
-
-  // For EpubReaderMenuActivity result
-  uint8_t selectedOrientation = 0;
-
-  // For KeyboardEntryActivity result
-  std::string inputText;
-
-  // For XtcReaderChapterSelectionActivity result
-  uint32_t selectedPage = 0;
-
-  // For KOReaderSyncActivity result
-  int syncedSpineIndex = 0;
-  int syncedPage = 0;
-
-  // For EpubReaderMenuActivity result (-1 = back/cancelled, else cast of MenuAction)
-  int menuAction = -1;
-
-  // For EpubReaderChapterSelectionActivity result
-  int selectedSpineIndex = 0;
-
-  // For EpubReaderPercentSelectionActivity result
-  int selectedPercent = 0;
+  template <typename ResultType, typename = std::enable_if_t<std::is_constructible_v<ResultVariant, ResultType&&>>>
+  ActivityResult(ResultType&& result) : data{std::forward<ResultType>(result)} {}
 };
 
 using ActivityResultHandler = std::function<void(const ActivityResult&)>;

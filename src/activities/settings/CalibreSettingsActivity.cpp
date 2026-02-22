@@ -55,8 +55,8 @@ void CalibreSettingsActivity::handleSelection() {
                                                                    SETTINGS.opdsServerUrl, 127, false),
                            [this](const ActivityResult& result) {
                              if (!result.isCancelled) {
-                               strncpy(SETTINGS.opdsServerUrl, result.inputText.c_str(),
-                                       sizeof(SETTINGS.opdsServerUrl) - 1);
+                               const auto& kb = std::get<KeyboardResult>(result.data);
+                               strncpy(SETTINGS.opdsServerUrl, kb.text.c_str(), sizeof(SETTINGS.opdsServerUrl) - 1);
                                SETTINGS.opdsServerUrl[sizeof(SETTINGS.opdsServerUrl) - 1] = '\0';
                                SETTINGS.saveToFile();
                              }
@@ -67,8 +67,8 @@ void CalibreSettingsActivity::handleSelection() {
                                                                    SETTINGS.opdsUsername, 63, false),
                            [this](const ActivityResult& result) {
                              if (!result.isCancelled) {
-                               strncpy(SETTINGS.opdsUsername, result.inputText.c_str(),
-                                       sizeof(SETTINGS.opdsUsername) - 1);
+                               const auto& kb = std::get<KeyboardResult>(result.data);
+                               strncpy(SETTINGS.opdsUsername, kb.text.c_str(), sizeof(SETTINGS.opdsUsername) - 1);
                                SETTINGS.opdsUsername[sizeof(SETTINGS.opdsUsername) - 1] = '\0';
                                SETTINGS.saveToFile();
                              }
@@ -79,8 +79,8 @@ void CalibreSettingsActivity::handleSelection() {
                                                                    SETTINGS.opdsPassword, 63, false),
                            [this](const ActivityResult& result) {
                              if (!result.isCancelled) {
-                               strncpy(SETTINGS.opdsPassword, result.inputText.c_str(),
-                                       sizeof(SETTINGS.opdsPassword) - 1);
+                               const auto& kb = std::get<KeyboardResult>(result.data);
+                               strncpy(SETTINGS.opdsPassword, kb.text.c_str(), sizeof(SETTINGS.opdsPassword) - 1);
                                SETTINGS.opdsPassword[sizeof(SETTINGS.opdsPassword) - 1] = '\0';
                                SETTINGS.saveToFile();
                              }

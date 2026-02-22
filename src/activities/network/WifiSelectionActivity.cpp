@@ -200,7 +200,7 @@ void WifiSelectionActivity::selectNetwork(const int index) {
           if (result.isCancelled) {
             state = WifiSelectionState::NETWORK_LIST;
           } else {
-            enteredPassword = result.inputText;
+            enteredPassword = std::get<KeyboardResult>(result.data).text;
           }
         });
   } else {
@@ -685,11 +685,9 @@ void WifiSelectionActivity::renderForgetPrompt() const {
 void WifiSelectionActivity::onComplete(const bool connected) {
   ActivityResult result;
   result.isCancelled = !connected;
-  result.wifiConnected = connected;
   if (connected) {
-    result.wifiSSID = selectedSSID;
-    result.wifiIP = connectedIP;
+    result.data = WifiResult{true, selectedSSID, connectedIP};
   }
-  setResult(result);
+  setResult(std::move(result));
   finish();
 }

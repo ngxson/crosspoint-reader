@@ -37,15 +37,13 @@ void EpubReaderPercentSelectionActivity::loop() {
   if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
     ActivityResult result;
     result.isCancelled = true;
-    setResult(result);
+    setResult(std::move(result));
     finish();
     return;
   }
 
   if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
-    ActivityResult result;
-    result.selectedPercent = percent;
-    setResult(result);
+    setResult(PercentResult{percent});
     finish();
     return;
   }

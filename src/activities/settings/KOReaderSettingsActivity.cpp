@@ -59,7 +59,8 @@ void KOReaderSettingsActivity::handleSelection() {
                                                                    false),  // not password
                            [this](const ActivityResult& result) {
                              if (!result.isCancelled) {
-                               KOREADER_STORE.setCredentials(result.inputText, KOREADER_STORE.getPassword());
+                               const auto& kb = std::get<KeyboardResult>(result.data);
+                               KOREADER_STORE.setCredentials(kb.text, KOREADER_STORE.getPassword());
                                KOREADER_STORE.saveToFile();
                              }
                            });
@@ -71,7 +72,8 @@ void KOReaderSettingsActivity::handleSelection() {
                                                                    false),  // show characters
                            [this](const ActivityResult& result) {
                              if (!result.isCancelled) {
-                               KOREADER_STORE.setCredentials(KOREADER_STORE.getUsername(), result.inputText);
+                               const auto& kb = std::get<KeyboardResult>(result.data);
+                               KOREADER_STORE.setCredentials(KOREADER_STORE.getUsername(), kb.text);
                                KOREADER_STORE.saveToFile();
                              }
                            });
@@ -85,9 +87,8 @@ void KOReaderSettingsActivity::handleSelection() {
                                                 false),  // not password
         [this](const ActivityResult& result) {
           if (!result.isCancelled) {
-            // Clear if user just left the prefilled https://
-            const std::string urlToSave =
-                (result.inputText == "https://" || result.inputText == "http://") ? "" : result.inputText;
+            const auto& kb = std::get<KeyboardResult>(result.data);
+            const std::string urlToSave = (kb.text == "https://" || kb.text == "http://") ? "" : kb.text;
             KOREADER_STORE.setServerUrl(urlToSave);
             KOREADER_STORE.saveToFile();
           }

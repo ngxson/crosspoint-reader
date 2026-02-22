@@ -62,7 +62,7 @@ void XtcReaderActivity::loop() {
           std::make_unique<XtcReaderChapterSelectionActivity>(renderer, mappedInput, xtc, currentPage),
           [this](const ActivityResult& result) {
             if (!result.isCancelled) {
-              currentPage = result.selectedPage;
+              currentPage = std::get<PageResult>(result.data).page;
             }
           });
     }

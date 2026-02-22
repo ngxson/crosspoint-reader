@@ -52,18 +52,16 @@ void EpubReaderChapterSelectionActivity::loop() {
     if (newSpineIndex == -1) {
       ActivityResult result;
       result.isCancelled = true;
-      setResult(result);
+      setResult(std::move(result));
       finish();
     } else {
-      ActivityResult result;
-      result.selectedSpineIndex = newSpineIndex;
-      setResult(result);
+      setResult(ChapterResult{newSpineIndex});
       finish();
     }
   } else if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
     ActivityResult result;
     result.isCancelled = true;
-    setResult(result);
+    setResult(std::move(result));
     finish();
   }
 

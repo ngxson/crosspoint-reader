@@ -73,7 +73,7 @@ void KOReaderAuthActivity::onEnter() {
 
   // Launch WiFi selection
   startActivityForResult(std::make_unique<WifiSelectionActivity>(renderer, mappedInput),
-                         [this](const ActivityResult& result) { onWifiSelectionComplete(result.wifiConnected); });
+                         [this](const ActivityResult& result) { onWifiSelectionComplete(!result.isCancelled); });
 }
 
 void KOReaderAuthActivity::onExit() {

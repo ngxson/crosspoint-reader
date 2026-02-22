@@ -5,8 +5,7 @@
 #include "../Activity.h"
 #include "util/ButtonNavigator.h"
 
-// // Enum for network mode selection
-// enum class NetworkMode { JOIN_NETWORK, CONNECT_CALIBRE, CREATE_HOTSPOT };
+enum class NetworkMode { JOIN_NETWORK, CONNECT_CALIBRE, CREATE_HOTSPOT };
 
 /**
  * NetworkModeSelectionActivity presents the user with a choice:

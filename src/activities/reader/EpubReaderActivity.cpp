@@ -138,9 +138,10 @@ void EpubReaderActivity::loop() {
         std::make_unique<EpubReaderMenuActivity>(renderer, mappedInput, epub->getTitle(), currentPage, totalPages,
                                                  bookProgressPercent, SETTINGS.orientation),
         [this](const ActivityResult& result) {
-          applyOrientation(result.selectedOrientation);
+          const auto& menu = std::get<MenuResult>(result.data);
+          applyOrientation(menu.orientation);
           if (!result.isCancelled) {
-            onReaderMenuConfirm(static_cast<EpubReaderMenuActivity::MenuAction>(result.menuAction));
+            onReaderMenuConfirm(static_cast<EpubReaderMenuActivity::MenuAction>(menu.action));
           }
         });
   }
@@ -303,8 +304,8 @@ void EpubReaderActivity::onReaderMenuConfirm(EpubReaderMenuActivity::MenuAction 
       startActivityForResult(
           std::make_unique<EpubReaderChapterSelectionActivity>(renderer, mappedInput, epub, path, spineIdx),
           [this](const ActivityResult& result) {
-            if (!result.isCancelled && currentSpineIndex != result.selectedSpineIndex) {
-              currentSpineIndex = result.selectedSpineIndex;
+            if (!result.isCancelled && currentSpineIndex != std::get<ChapterResult>(result.data).spineIndex) {
+              currentSpineIndex = std::get<ChapterResult>(result.data).spineIndex;
               nextPageNumber = 0;
               section.reset();
             }
@@ -322,7 +323,7 @@ void EpubReaderActivity::onReaderMenuConfirm(EpubReaderMenuActivity::MenuAction 
           std::make_unique<EpubReaderPercentSelectionActivity>(renderer, mappedInput, initialPercent),
           [this](const ActivityResult& result) {
             if (!result.isCancelled) {
-              jumpToPercent(result.selectedPercent);
+              jumpToPercent(std::get<PercentResult>(result.data).percent);
             }
           });
       break;
@@ -351,18 +352,19 @@ void EpubReaderActivity::onReaderMenuConfirm(EpubReaderMenuActivity::MenuAction 
       if (KOREADER_STORE.hasCredentials()) {
         const int currentPage = section ? section->currentPage : 0;
         const int totalPages = section ? section->pageCount : 0;
-        startActivityForResult(std::make_unique<KOReaderSyncActivity>(renderer, mappedInput, epub, epub->getPath(),
-                                                                      currentSpineIndex, currentPage, totalPages),
-                               [this](const ActivityResult& result) {
-                                 if (!result.isCancelled) {
-                                   if (currentSpineIndex != result.syncedSpineIndex ||
-                                       (section && section->currentPage != result.syncedPage)) {
-                                     currentSpineIndex = result.syncedSpineIndex;
-                                     nextPageNumber = result.syncedPage;
-                                     section.reset();
-                                   }
-                                 }
-                               });
+        startActivityForResult(
+            std::make_unique<KOReaderSyncActivity>(renderer, mappedInput, epub, epub->getPath(), currentSpineIndex,
+                                                   currentPage, totalPages),
+            [this](const ActivityResult& result) {
+              if (!result.isCancelled) {
+                const auto& sync = std::get<SyncResult>(result.data);
+                if (currentSpineIndex != sync.spineIndex || (section && section->currentPage != sync.page)) {
+                  currentSpineIndex = sync.spineIndex;
+                  nextPageNumber = sync.page;
+                  section.reset();
+                }
+              }
+            });
       }
       break;
     }

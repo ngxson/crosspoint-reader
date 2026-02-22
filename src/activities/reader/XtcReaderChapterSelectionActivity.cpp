@@ -59,15 +59,13 @@ void XtcReaderChapterSelectionActivity::loop() {
   if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
     const auto& chapters = xtc->getChapters();
     if (!chapters.empty() && selectorIndex >= 0 && selectorIndex < static_cast<int>(chapters.size())) {
-      ActivityResult result;
-      result.selectedPage = chapters[selectorIndex].startPage;
-      setResult(result);
+      setResult(PageResult{chapters[selectorIndex].startPage});
       finish();
     }
   } else if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
     ActivityResult result;
     result.isCancelled = true;
-    setResult(result);
+    setResult(std::move(result));
     finish();
   }
 

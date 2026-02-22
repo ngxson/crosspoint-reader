@@ -319,18 +319,13 @@ void KeyboardEntryActivity::render(RenderLock&&) {
 }
 
 void KeyboardEntryActivity::onComplete(std::string text) {
-  // Pass entered text back to caller via ActivityResult
-  ActivityResult result;
-  result.isCancelled = false;
-  result.inputText = std::move(text);
-  setResult(result);
+  setResult(KeyboardResult{std::move(text)});
   finish();
 }
 
 void KeyboardEntryActivity::onCancel() {
-  // Pass cancellation back to caller via ActivityResult
   ActivityResult result;
   result.isCancelled = true;
-  setResult(result);
+  setResult(std::move(result));
   finish();
 }

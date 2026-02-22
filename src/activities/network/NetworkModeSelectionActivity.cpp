@@ -85,16 +85,13 @@ void NetworkModeSelectionActivity::render(RenderLock&&) {
 }
 
 void NetworkModeSelectionActivity::onModeSelected(NetworkMode mode) {
-  ActivityResult result;
-  result.isCancelled = false;
-  result.selectedNetworkMode = mode;
-  setResult(result);
+  setResult(NetworkModeResult{mode});
   finish();
 }
 
 void NetworkModeSelectionActivity::onCancel() {
   ActivityResult result;
   result.isCancelled = true;
-  setResult(result);
+  setResult(std::move(result));
   finish();
 }

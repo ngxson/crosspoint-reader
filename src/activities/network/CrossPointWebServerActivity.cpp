@@ -53,7 +53,7 @@ void CrossPointWebServerActivity::onEnter() {
                            if (result.isCancelled) {
                              onGoHome();
                            } else {
-                             onNetworkModeSelected(result.selectedNetworkMode);
+                             onNetworkModeSelected(std::get<NetworkModeResult>(result.data).mode);
                            }
                          });
 }
@@ -121,7 +121,7 @@ void CrossPointWebServerActivity::onNetworkModeSelected(const NetworkMode mode) 
                                    if (result.isCancelled) {
                                      onGoHome();
                                    } else {
-                                     onNetworkModeSelected(result.selectedNetworkMode);
+                                     onNetworkModeSelected(std::get<NetworkModeResult>(result.data).mode);
                                    }
                                  });
         });
@@ -137,9 +137,12 @@ void CrossPointWebServerActivity::onNetworkModeSelected(const NetworkMode mode) 
     LOG_DBG("WEBACT", "Launching WifiSelectionActivity...");
     startActivityForResult(std::make_unique<WifiSelectionActivity>(renderer, mappedInput),
                            [this](const ActivityResult& result) {
-                             connectedIP = result.wifiIP;
-                             connectedSSID = result.wifiSSID;
-                             onWifiSelectionComplete(result.wifiConnected);
+                             if (!result.isCancelled) {
+                               const auto& wifi = std::get<WifiResult>(result.data);
+                               connectedIP = wifi.ip;
+                               connectedSSID = wifi.ssid;
+                             }
+                             onWifiSelectionComplete(!result.isCancelled);
                            });
   } else {
     // AP mode - start access point
@@ -172,7 +175,7 @@ void CrossPointWebServerActivity::onWifiSelectionComplete(const bool connected) 
                              if (result.isCancelled) {
                                onGoHome();
                              } else {
-                               onNetworkModeSelected(result.selectedNetworkMode);
+                               onNetworkModeSelected(std::get<NetworkModeResult>(result.data).mode);
                              }
                            });
   }

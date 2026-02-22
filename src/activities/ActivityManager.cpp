@@ -50,7 +50,7 @@ void ActivityManager::loop() {
   while (pendingAction != PendingAction::None) {
     if (pendingAction == PendingAction::Pop) {
       RenderLock lock;
-      ActivityResult pendingResult = currentActivity->result;  // copy before we destroy the activity
+      ActivityResult pendingResult = std::move(currentActivity->result);
 
       // Destroy the current activity
       exitActivity(lock);

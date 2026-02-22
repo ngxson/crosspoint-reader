@@ -15,15 +15,13 @@ void Activity::requestUpdateAndWait() {
 
 void Activity::onGoHome() { activityManager.goHome(); }
 
-void Activity::onSelectBook(const std::string& path) {
-  activityManager.goToReader(path);
-}
+void Activity::onSelectBook(const std::string& path) { activityManager.goToReader(path); }
 
 void Activity::startActivityForResult(std::unique_ptr<Activity>&& activity, ActivityResultHandler resultHandler) {
   this->resultHandler = std::move(resultHandler);
   activityManager.pushActivity(std::move(activity));
 }
 
-void Activity::setResult(const ActivityResult& result) { this->result = result; }
+void Activity::setResult(ActivityResult&& result) { this->result = std::move(result); }
 
 void Activity::finish() { activityManager.popActivity(); }
