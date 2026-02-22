@@ -52,10 +52,10 @@ struct ActivityResult {
   bool isCancelled = false;
   ResultVariant data;
 
-  ActivityResult() = default;
+  explicit ActivityResult() = default;
 
   template <typename ResultType, typename = std::enable_if_t<std::is_constructible_v<ResultVariant, ResultType&&>>>
-  ActivityResult(ResultType&& result) : data{std::forward<ResultType>(result)} {}
+  explicit ActivityResult(ResultType&& result) : data{std::forward<ResultType>(result)} {}
 };
 
 using ActivityResultHandler = std::function<void(const ActivityResult&)>;

@@ -139,6 +139,7 @@ void EpubReaderActivity::loop() {
         std::make_unique<EpubReaderMenuActivity>(renderer, mappedInput, epub->getTitle(), currentPage, totalPages,
                                                  bookProgressPercent, SETTINGS.orientation),
         [this](const ActivityResult& result) {
+          // Always apply orientation change even if the menu was cancelled
           const auto& menu = std::get<MenuResult>(result.data);
           applyOrientation(menu.orientation);
           if (!result.isCancelled) {
