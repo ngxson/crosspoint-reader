@@ -19,7 +19,7 @@ void ClearCacheActivity::onEnter() {
 void ClearCacheActivity::onExit() { Activity::onExit(); }
 
 void ClearCacheActivity::render(RenderLock&&) {
-  auto metrics = UITheme::getInstance().getMetrics();
+  const auto& metrics = UITheme::getInstance().getMetrics();
   const auto pageWidth = renderer.getScreenWidth();
   const auto pageHeight = renderer.getScreenHeight();
 

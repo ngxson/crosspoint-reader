@@ -347,7 +347,7 @@ void CrossPointWebServerActivity::render(RenderLock&&) {
   // Subactivities handle their own rendering
   if (state == WebServerActivityState::SERVER_RUNNING || state == WebServerActivityState::AP_STARTING) {
     renderer.clearScreen();
-    auto metrics = UITheme::getInstance().getMetrics();
+    const auto& metrics = UITheme::getInstance().getMetrics();
     const auto pageWidth = renderer.getScreenWidth();
     const auto pageHeight = renderer.getScreenHeight();
 
@@ -390,7 +390,7 @@ void drawQRCode(const GfxRenderer& renderer, const int x, const int y, const std
 }
 
 void CrossPointWebServerActivity::renderServerRunning() const {
-  auto metrics = UITheme::getInstance().getMetrics();
+  const auto& metrics = UITheme::getInstance().getMetrics();
   const auto pageWidth = renderer.getScreenWidth();
 
   GUI.drawHeader(renderer, Rect{0, metrics.topPadding, pageWidth, metrics.headerHeight},

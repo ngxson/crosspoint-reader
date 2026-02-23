@@ -89,7 +89,7 @@ void KOReaderAuthActivity::onExit() {
 void KOReaderAuthActivity::render(RenderLock&&) {
   renderer.clearScreen();
 
-  auto metrics = UITheme::getInstance().getMetrics();
+  const auto& metrics = UITheme::getInstance().getMetrics();
   const auto pageWidth = renderer.getScreenWidth();
   const auto pageHeight = renderer.getScreenHeight();
 

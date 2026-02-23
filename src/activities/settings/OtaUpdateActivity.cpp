@@ -74,7 +74,7 @@ void OtaUpdateActivity::onExit() {
 }
 
 void OtaUpdateActivity::render(RenderLock&&) {
-  auto metrics = UITheme::getInstance().getMetrics();
+  const auto& metrics = UITheme::getInstance().getMetrics();
   const auto pageWidth = renderer.getScreenWidth();
   const auto pageHeight = renderer.getScreenHeight();
 

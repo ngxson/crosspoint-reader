@@ -7,6 +7,7 @@
 
 #include "../Activity.h"
 #include "components/UITheme.h"
+#include "util/ButtonNavigator.h"
 
 class MappedInputManager;
 
@@ -27,6 +28,7 @@ class LanguageSelectActivity final : public Activity {
   void handleSelection();
 
   void onBack() { finish(); }
+  ButtonNavigator buttonNavigator;
   int selectedIndex = 0;
   int totalItems = 0;
 };
