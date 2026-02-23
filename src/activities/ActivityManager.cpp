@@ -113,6 +113,15 @@ void ActivityManager::loop() {
       continue;
     }
   }
+
+  if (requestedUpdate) {
+    requestedUpdate = false;
+    // Using direct notification to signal the render task to update
+    // Increment counter so multiple rapid calls won't be lost
+    if (renderTaskHandle) {
+      xTaskNotify(renderTaskHandle, 1, eIncrement);
+    }
+  }
 }
 
 void ActivityManager::exitActivity(const RenderLock& lock) {
@@ -198,11 +207,9 @@ bool ActivityManager::isReaderActivity() const { return currentActivity && curre
 bool ActivityManager::skipLoopDelay() const { return currentActivity && currentActivity->skipLoopDelay(); }
 
 void ActivityManager::requestUpdate() {
-  // Using direct notification to signal the render task to update
-  // Increment counter so multiple rapid calls won't be lost
-  if (renderTaskHandle) {
-    xTaskNotify(renderTaskHandle, 1, eIncrement);
-  }
+  // Deferring the update until current loop is finished
+  // This is to avoid multiple updates being requested in the same loop
+  requestedUpdate = true;
 }
 
 // RenderLock

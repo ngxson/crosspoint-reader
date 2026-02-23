@@ -158,7 +158,7 @@ void SettingsActivity::toggleCurrentSetting() {
       SETTINGS.*(setting.valuePtr) = currentValue + setting.valueRange.step;
     }
   } else if (setting.type == SettingType::ACTION) {
-    auto resultHandler = [this](const ActivityResult&) {};
+    auto resultHandler = [this](const ActivityResult&) { SETTINGS.saveToFile(); };
 
     switch (setting.action) {
       case SettingAction::RemapFrontButtons:
@@ -186,6 +186,7 @@ void SettingsActivity::toggleCurrentSetting() {
         // Do nothing
         break;
     }
+    return;  // Results will be handled in the result handler, so we can return early here
   } else {
     return;
   }
