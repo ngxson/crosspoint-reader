@@ -1,6 +1,7 @@
 #include "HalStorage.h"
 
 #include <SDCardManager.h>
+#include <Logging.h>
 
 #define SDCard SDCardManager::getInstance()
 
@@ -8,7 +9,9 @@ HalStorage HalStorage::instance;
 
 HalStorage::HalStorage() {}
 
-bool HalStorage::begin() { return SDCard.begin(); }
+SemaphoreHandle_t sdcardMutex = nullptr; // FOR TESTING ONLY
+
+bool HalStorage::begin() { return SDCard.begin(); sdcardMutex = xSemaphoreCreateMutex(); }
 
 bool HalStorage::ready() const { return SDCard.ready(); }
 
@@ -65,3 +68,30 @@ bool HalStorage::openFileForWrite(const char* moduleName, const String& path, Fs
 }
 
 bool HalStorage::removeDir(const char* path) { return SDCard.removeDir(path); }
+
+// extern "C" {
+void sdCsInit(SdCsPin_t pin) { pinMode(pin, OUTPUT); }
+
+const char* activeTask = nullptr;
+void sdCsWrite(SdCsPin_t pin, bool level) {
+  TaskStatus_t xTaskDetails;
+  vTaskGetInfo(NULL, &xTaskDetails, pdTRUE, eInvalid);
+  // LOG_DBG("SDCardManager", "sdCsWrite called from task: %s, level: %d", xTaskDetails.pcTaskName, level);
+
+  if (!level) {
+    // CS low means active, start of transaction
+    // xSemaphoreTake(sdcardMutex, portMAX_DELAY);
+    activeTask = xTaskDetails.pcTaskName;
+  } else {
+    // CS high means inactive (done transaction)
+    // xSemaphoreGive(sdcardMutex);
+    if (activeTask && activeTask != xTaskDetails.pcTaskName) {
+      LOG_ERR("SDCardManager", "sdCsWrite STOP request from task %s, but expected %s", xTaskDetails.pcTaskName, activeTask);
+      delay(100); // Add delay to make the issue more visible in logs
+      assert(false && "sdCsWrite STOP request from unexpected task");
+    }
+  }
+
+  digitalWrite(pin, level ? HIGH : LOW);
+}
+// }
