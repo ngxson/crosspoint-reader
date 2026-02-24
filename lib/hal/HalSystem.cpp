@@ -80,13 +80,18 @@ void clearPanic() {
   for (size_t i = 0; i < MAX_PANIC_STACK_DEPTH; i++) {
     panicStack[i].sp = 0;
   }
+  clearLastLogs();
 }
 
 std::string getPanicInfo(bool full) {
-  std::string info = panicMessage;
+  if (!full) {
+    return panicMessage;
+  } else {
+    std::string info;
 
-  if (full) {
-    info += "\n\nCrossPoint version: " CROSSPOINT_VERSION;
+    info += "CrossPoint version: " CROSSPOINT_VERSION;
+    info += "\n\nPanic reason: " + std::string(panicMessage);
+    info += "\n\nLast logs:\n" + getLastLogs();
     info += "\n\nStack memory:\n";
 
     auto toHex = [](uint32_t value) {
@@ -104,9 +109,9 @@ std::string getPanicInfo(bool full) {
       }
       info += "\n";
     }
-  }
 
-  return info;
+    return info;
+  }
 }
 
 bool isRebootFromPanic() {
