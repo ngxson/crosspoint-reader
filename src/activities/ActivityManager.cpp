@@ -50,6 +50,14 @@ void ActivityManager::loop() {
   while (pendingAction != PendingAction::None) {
     if (pendingAction == PendingAction::Pop) {
       RenderLock lock;
+
+      if (!currentActivity) {
+        // Should never happen in practice
+        LOG_ERR("ACT", "Pop set but currentActivity is null; ignoring pop request");
+        pendingAction = PendingAction::None;
+        continue;
+      }
+
       ActivityResult pendingResult = std::move(currentActivity->result);
 
       // Destroy the current activity

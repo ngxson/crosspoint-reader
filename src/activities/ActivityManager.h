@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "Activity.h"
 #include "GfxRenderer.h"
 #include "MappedInputManager.h"
 #include "RenderLock.h"
