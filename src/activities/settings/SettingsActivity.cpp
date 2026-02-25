@@ -12,6 +12,7 @@
 #include "MappedInputManager.h"
 #include "OtaUpdateActivity.h"
 #include "SettingsList.h"
+#include "StatusBarSettingsActivity.h"
 #include "activities/network/WifiSelectionActivity.h"
 #include "components/UITheme.h"
 #include "fontIds.h"
@@ -51,6 +52,7 @@ void SettingsActivity::onEnter() {
   systemSettings.push_back(SettingInfo::Action(StrId::STR_CLEAR_READING_CACHE, SettingAction::ClearCache));
   systemSettings.push_back(SettingInfo::Action(StrId::STR_CHECK_UPDATES, SettingAction::CheckForUpdates));
   systemSettings.push_back(SettingInfo::Action(StrId::STR_LANGUAGE, SettingAction::Language));
+  readerSettings.push_back(SettingInfo::Action(StrId::STR_CUSTOMISE_STATUS_BAR, SettingAction::CustomiseStatusBar));
 
   // Reset selection to first category
   selectedCategoryIndex = 0;
@@ -163,6 +165,9 @@ void SettingsActivity::toggleCurrentSetting() {
     switch (setting.action) {
       case SettingAction::RemapFrontButtons:
         startActivityForResult(std::make_unique<ButtonRemapActivity>(renderer, mappedInput), resultHandler);
+        break;
+      case SettingAction::CustomiseStatusBar:
+        enterSubActivity(new StatusBarSettingsActivity(renderer, mappedInput, onComplete));
         break;
       case SettingAction::KOReaderSync:
         startActivityForResult(std::make_unique<KOReaderSettingsActivity>(renderer, mappedInput), resultHandler);

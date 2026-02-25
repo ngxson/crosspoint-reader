@@ -39,6 +39,15 @@ void syncTimeWithNTP() {
     LOG_DBG("KOSync", "NTP sync timeout, using fallback");
   }
 }
+void wifiOff() {
+  if (esp_sntp_enabled()) {
+    esp_sntp_stop();
+  }
+  WiFi.disconnect(false);
+  delay(100);
+  WiFi.mode(WIFI_OFF);
+  delay(100);
+}
 }  // namespace
 
 void KOReaderSyncActivity::onWifiSelectionComplete(const bool success) {
@@ -165,6 +174,7 @@ void KOReaderSyncActivity::performUpload() {
   const auto result = KOReaderSyncClient::updateProgress(progress);
 
   if (result != KOReaderSyncClient::OK) {
+    wifiOff();
     {
       RenderLock lock(*this);
       state = SYNC_FAILED;
@@ -174,6 +184,7 @@ void KOReaderSyncActivity::performUpload() {
     return;
   }
 
+  wifiOff();
   {
     RenderLock lock(*this);
     state = UPLOAD_COMPLETE;
@@ -191,11 +202,7 @@ void KOReaderSyncActivity::onEnter() {
     return;
   }
 
-  // Turn on WiFi
-  LOG_DBG("KOSync", "Turning on WiFi...");
-  WiFi.mode(WIFI_STA);
-
-  // Check if already connected
+  // Check if already connected (e.g. from settings page auth)
   if (WiFi.status() == WL_CONNECTED) {
     LOG_DBG("KOSync", "Already connected to WiFi");
     state = SYNCING;
@@ -229,11 +236,7 @@ void KOReaderSyncActivity::onEnter() {
 void KOReaderSyncActivity::onExit() {
   Activity::onExit();
 
-  // Turn off wifi
-  WiFi.disconnect(false);
-  delay(100);
-  WiFi.mode(WIFI_OFF);
-  delay(100);
+  wifiOff();
 }
 
 void KOReaderSyncActivity::render(RenderLock&&) {
@@ -375,7 +378,8 @@ void KOReaderSyncActivity::loop() {
 
     if (mappedInput.wasPressed(MappedInputManager::Button::Confirm)) {
       if (selectedOption == 0) {
-        // Apply remote progress
+        // Apply remote progress — WiFi no longer needed
+        wifiOff();
         setResult(SyncResult{remotePosition.spineIndex, remotePosition.pageNumber});
         finish();
       } else if (selectedOption == 1) {
