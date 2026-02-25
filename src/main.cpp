@@ -11,7 +11,6 @@
 #include <Logging.h>
 #include <SPI.h>
 #include <builtinFonts/all.h>
-#include <esp32-hal.h>
 
 #include <cstring>
 

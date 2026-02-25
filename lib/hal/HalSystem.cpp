@@ -18,6 +18,7 @@ RTC_NOINIT_ATTR HalSystem::StackFrame panicStack[MAX_PANIC_STACK_DEPTH];
 extern "C" {
 
 void IRAM_ATTR __wrap_panic_abort(const char* message) {
+  if (!message) message = "(no message)";
   // IRAM-safe bounded copy (strncpy is not IRAM-safe in panic context)
   int i = 0;
   for (; i < (int)sizeof(panicMessage) - 1 && message[i]; i++) {
@@ -29,6 +30,10 @@ void IRAM_ATTR __wrap_panic_abort(const char* message) {
 }
 
 void IRAM_ATTR __wrap_panic_print_backtrace(const void* frame, int core) {
+  if (!frame) {
+    __real_panic_print_backtrace(frame, core);
+    return;
+  }
   for (size_t i = 0; i < MAX_PANIC_STACK_DEPTH; i++) {
     panicStack[i].sp = 0;
   }
