@@ -348,17 +348,13 @@ void EpubReaderActivity::onReaderMenuConfirm(EpubReaderMenuActivity::MenuAction 
             }
           }
           if (!fullText.empty()) {
-            exitActivity();
-            enterNewActivity(new QrDisplayActivity(renderer, mappedInput, fullText, [this]() {
-              exitActivity();
-              requestUpdate();
-            }));
+            startActivityForResult(std::make_unique<QrDisplayActivity>(renderer, mappedInput, fullText),
+                                   [this](const ActivityResult& result) {});
             break;
           }
         }
       }
       // If no text or page loading failed, just close menu
-      exitActivity();
       requestUpdate();
       break;
     }
