@@ -17,8 +17,9 @@ RTC_NOINIT_ATTR HalSystem::StackFrame panicStack[MAX_PANIC_STACK_DEPTH];
 
 extern "C" {
 
+static DRAM_ATTR const char PANIC_REASON_UNKNOWN[] = "(unknown panic reason)";
 void IRAM_ATTR __wrap_panic_abort(const char* message) {
-  if (!message) message = "(no message)";
+  if (!message) message = PANIC_REASON_UNKNOWN;
   // IRAM-safe bounded copy (strncpy is not IRAM-safe in panic context)
   int i = 0;
   for (; i < (int)sizeof(panicMessage) - 1 && message[i]; i++) {
