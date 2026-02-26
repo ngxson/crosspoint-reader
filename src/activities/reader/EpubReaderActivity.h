@@ -42,7 +42,7 @@ class EpubReaderActivity final : public Activity {
   void applyOrientation(uint8_t orientation);
 
   // Footnote navigation
-  void navigateToHref(const std::string href, bool savePosition = false);
+  void navigateToHref(const std::string& href, bool savePosition = false);
   void restoreSavedPosition();
 
  public:

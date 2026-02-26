@@ -324,7 +324,7 @@ void EpubReaderActivity::onReaderMenuConfirm(EpubReaderMenuActivity::MenuAction 
                              [this](const ActivityResult& result) {
                                if (!result.isCancelled) {
                                  const auto& footnoteResult = std::get<FootnoteResult>(result.data);
-                                 navigateToHref(std::move(footnoteResult.href), true);
+                                 navigateToHref(footnoteResult.href, true);
                                }
                                requestUpdate();
                              });
@@ -688,7 +688,7 @@ void EpubReaderActivity::renderStatusBar() const {
   GUI.drawStatusBar(renderer, bookProgress, currentPage, pageCount, title);
 }
 
-void EpubReaderActivity::navigateToHref(const std::string hrefStr, const bool savePosition) {
+void EpubReaderActivity::navigateToHref(const std::string& hrefStr, const bool savePosition) {
   if (!epub) return;
 
   // Push current position onto saved stack
