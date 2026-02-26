@@ -45,8 +45,12 @@ struct NetworkModeResult {
   NetworkMode mode;
 };
 
+struct FootnoteResult {
+  std::string href;
+};
+
 using ResultVariant = std::variant<std::monostate, WifiResult, KeyboardResult, MenuResult, ChapterResult, PercentResult,
-                                   PageResult, SyncResult, NetworkModeResult>;
+                                   PageResult, SyncResult, NetworkModeResult, FootnoteResult>;
 
 struct ActivityResult {
   bool isCancelled = false;
