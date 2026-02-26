@@ -52,20 +52,20 @@ void ButtonRemapActivity::loop() {
     SETTINGS.frontButtonLeft = CrossPointSettings::FRONT_HW_LEFT;
     SETTINGS.frontButtonRight = CrossPointSettings::FRONT_HW_RIGHT;
     SETTINGS.saveToFile();
-    onBack();
+    finish();
     return;
   }
 
   if (mappedInput.wasPressed(MappedInputManager::Button::Down)) {
     // Exit without changing settings.
-    onBack();
+    finish();
     return;
   }
 
   {
-    // Wait for the UI to refresh before accepting another assignment.
+    // Make sure UI done rendering before accepting another assignment.
     // This avoids rapid double-presses that can advance the step without a visible redraw.
-    requestUpdateAndWait();
+    RenderLock lock(*this);
 
     // Wait for a front button press to assign to the current role.
     const int pressedButton = mappedInput.getPressedFrontButton();
@@ -86,7 +86,7 @@ void ButtonRemapActivity::loop() {
       // All roles assigned; save to settings and exit.
       applyTempMapping();
       SETTINGS.saveToFile();
-      onBack();
+      finish();
       return;
     }
 

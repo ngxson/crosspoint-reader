@@ -33,6 +33,4 @@ class ButtonRemapActivity final : public Activity {
   // Labels for UI display.
   const char* getRoleName(uint8_t roleIndex) const;
   const char* getHardwareName(uint8_t buttonIndex) const;
-
-  void onBack() { finish(); }
 };
