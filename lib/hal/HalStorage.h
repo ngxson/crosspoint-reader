@@ -72,9 +72,9 @@ class HalFile : public Print {
   size_t getName(char* name, size_t len);
   size_t size();
   size_t fileSize();
-  size_t seek(size_t pos);
-  size_t seekCur(int64_t offset);
-  size_t seekSet(size_t offset);
+  bool seek(size_t pos);
+  bool seekCur(int64_t offset);
+  bool seekSet(size_t offset);
   int available() const;
   size_t position() const;
   int read(void* buf, size_t count);
