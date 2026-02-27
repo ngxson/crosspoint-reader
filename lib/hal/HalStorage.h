@@ -59,14 +59,18 @@ class HalStorage {
 #define Storage HalStorage::getInstance()
 
 class HalFile : public Print {
- public:
-  // The impl class is public to allow fromFsFile() to construct it
-  // Otherwise, we will need to include FsFile in this header, which is undesirable
+  friend class HalStorage;
   class Impl;
-  std::shared_ptr<Impl> impl;
+  std::unique_ptr<Impl> impl;
+  explicit HalFile(std::unique_ptr<Impl> impl);
 
-  explicit HalFile();
-  ~HalFile() = default;
+ public:
+  HalFile();
+  ~HalFile();
+  HalFile(HalFile&&);
+  HalFile& operator=(HalFile&&);
+  HalFile(const HalFile&) = delete;
+  HalFile& operator=(const HalFile&) = delete;
 
   void flush();
   size_t getName(char* name, size_t len);

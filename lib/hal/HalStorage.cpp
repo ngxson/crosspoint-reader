@@ -60,17 +60,19 @@ class HalFile::Impl {
   FsFile file;
 };
 
-HalFile::HalFile() : impl(std::make_shared<HalFile::Impl>(FsFile())) {}
+HalFile::HalFile() = default;
 
-HalFile fromFsFile(FsFile&& fsFile) {
-  HalFile halFile;
-  halFile.impl = std::make_shared<HalFile::Impl>(std::move(fsFile));
-  return halFile;
-}
+HalFile::HalFile(std::unique_ptr<Impl> impl) : impl(std::move(impl)) {}
+
+HalFile::~HalFile() = default;
+
+HalFile::HalFile(HalFile&&) = default;
+
+HalFile& HalFile::operator=(HalFile&&) = default;
 
 HalFile HalStorage::open(const char* path, const oflag_t oflag) {
   StorageLock lock;  // ensure thread safety for the duration of this function
-  return fromFsFile(SDCard.open(path, oflag));
+  return HalFile(std::make_unique<HalFile::Impl>(SDCard.open(path, oflag)));
 }
 
 bool HalStorage::mkdir(const char* path, const bool pFlag) { HAL_STORAGE_WRAPPED_CALL(mkdir, path, pFlag); }
@@ -88,7 +90,7 @@ bool HalStorage::openFileForRead(const char* moduleName, const char* path, HalFi
   StorageLock lock;  // ensure thread safety for the duration of this function
   FsFile fsFile;
   bool ok = SDCard.openFileForRead(moduleName, path, fsFile);
-  file = fromFsFile(std::move(fsFile));
+  file = HalFile(std::make_unique<HalFile::Impl>(std::move(fsFile)));
   return ok;
 }
 
@@ -104,7 +106,7 @@ bool HalStorage::openFileForWrite(const char* moduleName, const char* path, HalF
   StorageLock lock;  // ensure thread safety for the duration of this function
   FsFile fsFile;
   bool ok = SDCard.openFileForWrite(moduleName, path, fsFile);
-  file = fromFsFile(std::move(fsFile));
+  file = HalFile(std::make_unique<HalFile::Impl>(std::move(fsFile)));
   return ok;
 }
 
@@ -147,11 +149,18 @@ bool HalFile::isDirectory() const {
   return impl->file.isDirectory();
 }
 void HalFile::rewindDirectory() { HAL_FILE_WRAPPED_CALL(rewindDirectory, ); }
-bool HalFile::close() { HAL_FILE_WRAPPED_CALL(close, ); }
+bool HalFile::close() {
+  HalStorage::StorageLock lock;
+  if (!impl) return false;
+  return impl->file.close();
+}
 HalFile HalFile::openNextFile() {
   HalStorage::StorageLock lock;
   assert(impl != nullptr);
-  return fromFsFile(impl->file.openNextFile());
+  return HalFile(std::make_unique<Impl>(impl->file.openNextFile()));
 }
-bool HalFile::isOpen() const { HAL_FILE_WRAPPED_CALL(isOpen, ); }
+bool HalFile::isOpen() const {
+  HalStorage::StorageLock lock;
+  return impl != nullptr && impl->file.isOpen();
+}
 HalFile::operator bool() const { return isOpen(); }
