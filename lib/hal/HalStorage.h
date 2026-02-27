@@ -60,6 +60,8 @@ class HalStorage {
 
 class HalFile : public Print {
  public:
+  // The impl class is public to allow fromFsFile() to construct it
+  // Otherwise, we will need to include FsFile in this header, which is undesirable
   class Impl;
   std::shared_ptr<Impl> impl;
 
