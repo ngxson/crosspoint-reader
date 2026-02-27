@@ -1,6 +1,8 @@
 #pragma once
 
+#include <Print.h>
 #include <common/FsApiConstants.h>  // for oflag_t
+#include <freertos/semphr.h>
 
 #include <memory>
 #include <string>
