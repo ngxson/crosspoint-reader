@@ -40,10 +40,10 @@ void ActivityManager::renderTaskLoop() {
     }
     // Notify any task blocked in requestUpdateAndWait() that the render is done.
     TaskHandle_t waiter = nullptr;
-    taskENTER_CRITICAL();
+    taskENTER_CRITICAL(nullptr);
     waiter = waitingTaskHandle;
     waitingTaskHandle = nullptr;
-    taskEXIT_CRITICAL();
+    taskEXIT_CRITICAL(nullptr);
     if (waiter) {
       xTaskNotify(waiter, 1, eIncrement);
     }
@@ -242,6 +242,9 @@ void ActivityManager::requestUpdateAndWait() {
   assert(!waitingTaskHandle && "Already waiting for a render to complete");
   // Render task cannot call requestUpdateAndWait() or it will cause a deadlock
   assert(xTaskGetCurrentTaskHandle() != renderTaskHandle && "Render task cannot call requestUpdateAndWait()");
+  // Cannot call while holding RenderLock or it will cause a deadlock
+  assert(xSemaphoreGetMutexHolder(renderingMutex) != xTaskGetCurrentTaskHandle() &&
+         "Cannot call requestUpdateAndWait() while holding RenderLock");
   waitingTaskHandle = xTaskGetCurrentTaskHandle();
   xTaskNotify(renderTaskHandle, 1, eIncrement);
   ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
