@@ -4,6 +4,7 @@
 #include <common/FsApiConstants.h>  // for oflag_t
 #include <freertos/semphr.h>
 
+#include <array>
 #include <memory>
 #include <string>
 #include <vector>
@@ -45,6 +46,15 @@ class HalStorage {
   bool openFileForWrite(const char* moduleName, const String& path, HalFile& file);
   bool removeDir(const char* path);
 
+  // Encryption API.
+  // Call setEncryptionKey() with a 32-byte key. If "/.cp_encrypted" does not yet
+  // exist it is created (initialising a new encrypted card). If it does exist the
+  // key is validated against it. On success isEncrypted() returns true and all
+  // subsequent file operations transparently encrypt/decrypt both filenames and
+  // content using ChaCha20.
+  void setEncryptionKey(const std::array<uint8_t, 32>& key);
+  bool isEncrypted() const;
+
   static HalStorage& getInstance() { return instance; }
 
   class StorageLock;  // private class, used internally
@@ -54,6 +64,9 @@ class HalStorage {
 
   bool initialized = false;
   SemaphoreHandle_t storageMutex = nullptr;
+
+  bool encryptionEnabled = false;
+  std::array<uint8_t, 32> encryptionKey = {};
 };
 
 #define Storage HalStorage::getInstance()
