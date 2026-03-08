@@ -9,7 +9,7 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-#include "common.h"
+#include "mbedtls_common.h"
 
 #define MBEDTLS_CHACHA20_C
 #if defined(MBEDTLS_CHACHA20_C)
