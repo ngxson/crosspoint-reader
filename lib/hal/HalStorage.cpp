@@ -276,12 +276,33 @@ bool HalStorage::isEncrypted() const { return encryptionEnabled; }
 
 class HalFile::Impl {
  public:
-  explicit Impl(FsFile&& fsFile) : file(std::move(fsFile)) {}
+  explicit Impl(FsFile&& fsFile) : file(std::move(fsFile)) { mbedtls_chacha20_init(&chachaCtx); }
+  ~Impl() { mbedtls_chacha20_free(&chachaCtx); }
   FsFile file;
   bool encrypted = false;
   uint8_t contentKey[32] = {};
   // Per-file nonce is shared for all files (see design note in HalStorage.h)
   uint8_t contentNonce[12] = {};
+
+  // Cached ChaCha20 streaming context.
+  // chachaPos is the file byte offset at which the context is currently positioned.
+  // Sentinel UINT64_MAX means "not yet initialised".
+  // ensureChachaAt() is a no-op for sequential access; it only re-initialises after a seek.
+  mbedtls_chacha20_context chachaCtx;
+  uint64_t chachaPos = UINT64_MAX;
+
+  void ensureChachaAt(uint64_t pos) {
+    if (chachaPos == pos) return;
+    mbedtls_chacha20_setkey(&chachaCtx, contentKey);
+    mbedtls_chacha20_starts(&chachaCtx, contentNonce, static_cast<uint32_t>(pos / 64));
+    // Advance within the first block if starting mid-block
+    size_t skip = static_cast<size_t>(pos % 64);
+    if (skip > 0) {
+      uint8_t ks[64] = {};
+      mbedtls_chacha20_update(&chachaCtx, skip, ks, ks);
+    }
+    chachaPos = pos;
+  }
 };
 
 // ---------------------------------------------------------------------------
@@ -562,8 +583,10 @@ int HalFile::read(void* buf, size_t count) {
   size_t pos = impl->file.position();
   int n = impl->file.read(buf, count);
   if (n > 0 && impl->encrypted) {
-    chachaProcess(impl->contentKey, impl->contentNonce, pos,
-                  static_cast<uint8_t*>(buf), static_cast<size_t>(n));
+    impl->ensureChachaAt(static_cast<uint64_t>(pos));
+    mbedtls_chacha20_update(&impl->chachaCtx, static_cast<size_t>(n),
+                            static_cast<uint8_t*>(buf), static_cast<uint8_t*>(buf));
+    impl->chachaPos += static_cast<uint64_t>(n);
   }
   return n;
 }
@@ -574,8 +597,10 @@ int HalFile::read() {
   size_t pos = impl->file.position();
   int result = impl->file.read();
   if (result >= 0 && impl->encrypted) {
+    impl->ensureChachaAt(static_cast<uint64_t>(pos));
     uint8_t b = static_cast<uint8_t>(result);
-    chachaProcess(impl->contentKey, impl->contentNonce, pos, &b, 1);
+    mbedtls_chacha20_update(&impl->chachaCtx, 1, &b, &b);
+    impl->chachaPos++;
     return static_cast<int>(b);
   }
   return result;
@@ -586,17 +611,20 @@ size_t HalFile::write(const void* buf, size_t count) {
   assert(impl != nullptr);
   if (!impl->encrypted) return impl->file.write(buf, count);
   size_t pos = impl->file.position();
+  impl->ensureChachaAt(static_cast<uint64_t>(pos));
   // Use stack buffer for small writes to avoid heap overhead
   if (count <= 64) {
     uint8_t tmp[64];
     memcpy(tmp, buf, count);
-    chachaProcess(impl->contentKey, impl->contentNonce, pos, tmp, count);
+    mbedtls_chacha20_update(&impl->chachaCtx, count, tmp, tmp);
+    impl->chachaPos += count;
     return impl->file.write(tmp, count);
   }
   auto* tmp = static_cast<uint8_t*>(malloc(count));
   if (!tmp) return 0;
   memcpy(tmp, buf, count);
-  chachaProcess(impl->contentKey, impl->contentNonce, pos, tmp, count);
+  mbedtls_chacha20_update(&impl->chachaCtx, count, tmp, tmp);
+  impl->chachaPos += count;
   size_t written = impl->file.write(tmp, count);
   free(tmp);
   return written;
@@ -607,7 +635,9 @@ size_t HalFile::write(uint8_t b) {
   assert(impl != nullptr);
   if (impl->encrypted) {
     size_t pos = impl->file.position();
-    chachaProcess(impl->contentKey, impl->contentNonce, pos, &b, 1);
+    impl->ensureChachaAt(static_cast<uint64_t>(pos));
+    mbedtls_chacha20_update(&impl->chachaCtx, 1, &b, &b);
+    impl->chachaPos++;
   }
   return impl->file.write(b);
 }
