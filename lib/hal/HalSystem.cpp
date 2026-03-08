@@ -68,9 +68,7 @@ void IRAM_ATTR __wrap_panic_print_backtrace(const void* frame, int core) {
 }
 }
 
-namespace HalSystem {
-
-void begin() {
+HalSystem::HalSystem() {
   // This is mostly for the first boot, we need to initialize the panic info and logs to empty state
   // If we reboot from a panic state, we want to keep the panic info until we successfully dump it to the SD card, use
   // `clearPanic()` to clear it after dumping
@@ -79,7 +77,7 @@ void begin() {
   }
 }
 
-void checkPanic() {
+void HalSystem::checkPanic() {
   if (isRebootFromPanic()) {
     auto panicInfo = getPanicInfo(true);
     auto file = Storage.open("/crash_report.txt", O_WRITE | O_CREAT | O_TRUNC);
@@ -93,7 +91,7 @@ void checkPanic() {
   }
 }
 
-void clearPanic() {
+void HalSystem::clearPanic() {
   panicMessage[0] = '\0';
   for (size_t i = 0; i < MAX_PANIC_STACK_DEPTH; i++) {
     panicStack[i].sp = 0;
@@ -101,7 +99,7 @@ void clearPanic() {
   clearLastLogs();
 }
 
-std::string getPanicInfo(bool full) {
+std::string HalSystem::getPanicInfo(bool full) {
   if (!full) {
     return panicMessage;
   } else {
@@ -132,9 +130,7 @@ std::string getPanicInfo(bool full) {
   }
 }
 
-bool isRebootFromPanic() {
+bool HalSystem::isRebootFromPanic() {
   const auto resetReason = esp_reset_reason();
   return resetReason == ESP_RST_PANIC || resetReason == ESP_RST_CPU_LOCKUP;
 }
-
-}  // namespace HalSystem

@@ -26,6 +26,7 @@
 #include "util/ButtonNavigator.h"
 #include "util/ScreenshotUtil.h"
 
+HalSystem halSystem;
 HalDisplay display;
 HalGPIO gpio;
 MappedInputManager mappedInputManager(gpio);
@@ -228,7 +229,6 @@ void setupDisplayAndFonts() {
 void setup() {
   t1 = millis();
 
-  HalSystem::begin();
   gpio.begin();
   powerManager.begin();
 
@@ -251,8 +251,8 @@ void setup() {
     return;
   }
 
-  HalSystem::checkPanic();
-  HalSystem::clearPanic();  // TODO: move this to an activity when we have one to display the panic info
+  halSystem.checkPanic();
+  halSystem.clearPanic();  // TODO: move this to an activity when we have one to display the panic info
 
   SETTINGS.loadFromFile();
   I18N.loadSettings();
