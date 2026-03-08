@@ -161,38 +161,49 @@ static std::string decryptFilename(const uint8_t* key, const char* encName) {
   return result;
 }
 
-// Translate a full path: encrypts just the basename component (last segment after '/').
-// Directories (paths ending in '/') and the marker file are returned unchanged.
+// Translate a full path: encrypts every non-empty segment.
+// Already-encrypted segments (starting with '#') and the marker file are left unchanged.
 static std::string translatePathForEncryption(const uint8_t* key, const char* path) {
   if (!path || path[0] == '\0') return path ? path : "";
   if (strcmp(path, ENCRYPTED_MARKER_FILE) == 0) return path;
 
-  const char* lastSlash = strrchr(path, '/');
-  const char* filename = lastSlash ? lastSlash + 1 : path;
-
-  // Path ends with '/' (directory) or no filename -> pass through
-  if (filename[0] == '\0') return path;
-  // Already encrypted
-  if (filename[0] == '#') return path;
-
-  std::string encName = encryptFilename(key, filename);
-  if (lastSlash) {
-    return std::string(path, lastSlash + 1) + encName;
+  std::string result;
+  const char* p = path;
+  while (*p) {
+    if (*p == '/') {
+      result += '/';
+      p++;
+      continue;
+    }
+    const char* end = strchr(p, '/');
+    size_t segLen = end ? static_cast<size_t>(end - p) : strlen(p);
+    std::string seg(p, segLen);
+    if (seg[0] != '#') seg = encryptFilename(key, seg.c_str());
+    result += seg;
+    p += segLen;
   }
-  return encName;
+  return result;
 }
 
-// Decrypt the basename of a path that was returned by listFiles().
-static std::string decryptFilenameInPath(const uint8_t* key, const char* path) {
+// Decrypt every encrypted segment ('#'-prefixed) in a path.
+static std::string decryptAllSegmentsInPath(const uint8_t* key, const char* path) {
   if (!path) return "";
-  const char* lastSlash = strrchr(path, '/');
-  const char* filename = lastSlash ? lastSlash + 1 : path;
-  if (filename[0] != '#') return path;
-  std::string decrypted = decryptFilename(key, filename);
-  if (lastSlash) {
-    return std::string(path, lastSlash + 1) + decrypted;
+  std::string result;
+  const char* p = path;
+  while (*p) {
+    if (*p == '/') {
+      result += '/';
+      p++;
+      continue;
+    }
+    const char* end = strchr(p, '/');
+    size_t segLen = end ? static_cast<size_t>(end - p) : strlen(p);
+    std::string seg(p, segLen);
+    if (seg[0] == '#') seg = decryptFilename(key, seg.c_str());
+    result += seg;
+    p += segLen;
   }
-  return decrypted;
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -289,10 +300,16 @@ HalFile& HalFile::operator=(HalFile&&) = default;
 
 std::vector<String> HalStorage::listFiles(const char* path, int maxFiles) {
   StorageLock lock;
-  auto files = SDCard.listFiles(path, maxFiles);
+  const char* actualPath = path;
+  std::string encPath;
+  if (encryptionEnabled) {
+    encPath = translatePathForEncryption(encryptionKey.data(), path);
+    actualPath = encPath.c_str();
+  }
+  auto files = SDCard.listFiles(actualPath, maxFiles);
   if (encryptionEnabled) {
     for (auto& f : files) {
-      std::string dec = decryptFilenameInPath(encryptionKey.data(), f.c_str());
+      std::string dec = decryptAllSegmentsInPath(encryptionKey.data(), f.c_str());
       f = dec.c_str();
     }
   }
@@ -377,7 +394,9 @@ bool HalStorage::writeFile(const char* path, const String& content) {
 
 bool HalStorage::ensureDirectoryExists(const char* path) {
   StorageLock lock;
-  return SDCard.ensureDirectoryExists(path);
+  if (!encryptionEnabled) return SDCard.ensureDirectoryExists(path);
+  std::string enc = translatePathForEncryption(encryptionKey.data(), path);
+  return SDCard.ensureDirectoryExists(enc.c_str());
 }
 
 HalFile HalStorage::open(const char* path, const oflag_t oflag) {
@@ -401,7 +420,9 @@ HalFile HalStorage::open(const char* path, const oflag_t oflag) {
 
 bool HalStorage::mkdir(const char* path, const bool pFlag) {
   StorageLock lock;
-  return SDCard.mkdir(path, pFlag);
+  if (!encryptionEnabled) return SDCard.mkdir(path, pFlag);
+  std::string enc = translatePathForEncryption(encryptionKey.data(), path);
+  return SDCard.mkdir(enc.c_str(), pFlag);
 }
 
 bool HalStorage::exists(const char* path) {
@@ -428,7 +449,9 @@ bool HalStorage::rename(const char* oldPath, const char* newPath) {
 
 bool HalStorage::rmdir(const char* path) {
   StorageLock lock;
-  return SDCard.rmdir(path);
+  if (!encryptionEnabled) return SDCard.rmdir(path);
+  std::string enc = translatePathForEncryption(encryptionKey.data(), path);
+  return SDCard.rmdir(enc.c_str());
 }
 
 bool HalStorage::openFileForRead(const char* moduleName, const char* path, HalFile& file) {
@@ -491,7 +514,9 @@ bool HalStorage::openFileForWrite(const char* moduleName, const String& path, Ha
 
 bool HalStorage::removeDir(const char* path) {
   StorageLock lock;
-  return SDCard.removeDir(path);
+  if (!encryptionEnabled) return SDCard.removeDir(path);
+  std::string enc = translatePathForEncryption(encryptionKey.data(), path);
+  return SDCard.removeDir(enc.c_str());
 }
 
 // ---------------------------------------------------------------------------
