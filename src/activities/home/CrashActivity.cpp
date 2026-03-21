@@ -30,7 +30,6 @@ void CrashActivity::render(RenderLock&&) {
 
   const auto& metrics = UITheme::getInstance().getMetrics();
   const auto pageWidth = renderer.getScreenWidth();
-  const auto pageHeight = renderer.getScreenHeight();
   const auto contentWidth = pageWidth - 2 * metrics.contentSidePadding;
   const auto x = metrics.contentSidePadding;
   const auto lineHeight = renderer.getLineHeight(UI_10_FONT_ID);
